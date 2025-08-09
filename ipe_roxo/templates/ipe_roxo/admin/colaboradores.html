@@ -1,0 +1,196 @@
+{% extends 'ipe_roxo/partials/base.html' %}
+
+{% load static %}
+
+{% block title %}Painel do Administrador{% endblock title %}
+
+{% block content %}
+  {% include 'ipe_roxo/partials/navbar_admin.html' %}
+
+  <!-- CONTEÚDO PRINCIPAL -->
+<main class="container my-4">
+  <!-- BOTÃO DE CADASTRO -->
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold text-success">Colaboradores</h4>
+    <a href="{% url 'cadastrar_colaborador' %}" class="btn btn-success">
+      <i class="bi bi-person-plus"></i> Cadastrar Colaborador
+    </a>
+  </div>
+  <!-- ÁREA DE FILTRO / ORDEM -->
+    <form method="get" class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 w-100">
+
+    <!-- CAMPO DE PESQUISA -->
+    <div class="input-group w-100 w-md-50">
+      <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar colaborador ou email" value="{{ request.GET.pesquisa }}">
+      <button class="btn btn-outline-success" type="submit">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+
+    <!-- FILTRO, ORDENAR E LIMPAR -->
+    <div class="d-flex gap-2 flex-wrap">
+
+      <!-- FILTRAR STATUS -->
+      <div class="dropdown">
+        <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-funnel"></i> Filtrar
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <form method="get" class="dropdown-item p-0">
+              <input type="hidden" name="status" value="">
+              {% if request.GET.pesquisa %}
+                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+              {% endif %}
+              {% if request.GET.ordem %}
+                <input type="hidden" name="ordem" value="{{ request.GET.ordem }}">
+              {% endif %}
+              <button type="submit" class="btn w-100 text-start">Todos</button>
+            </form>
+          </li>
+          <li>
+            <form method="get" class="dropdown-item p-0">
+              <input type="hidden" name="status" value="ativos">
+              {% if request.GET.pesquisa %}
+                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+              {% endif %}
+              {% if request.GET.ordem %}
+                <input type="hidden" name="ordem" value="{{ request.GET.ordem }}">
+              {% endif %}
+              <button type="submit" class="btn w-100 text-start">Ativos</button>
+            </form>
+          </li>
+          <li>
+            <form method="get" class="dropdown-item p-0">
+              <input type="hidden" name="status" value="inativos">
+              {% if request.GET.pesquisa %}
+                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+              {% endif %}
+              {% if request.GET.ordem %}
+                <input type="hidden" name="ordem" value="{{ request.GET.ordem }}">
+              {% endif %}
+              <button type="submit" class="btn w-100 text-start">Inativos</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ORDENAR -->
+      <div class="dropdown">
+        <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-sort-alpha-down"></i> Ordenar
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <form method="get" class="dropdown-item p-0">
+              <input type="hidden" name="ordem" value="az">
+              {% if request.GET.pesquisa %}
+                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+              {% endif %}
+              {% if request.GET.status %}
+                <input type="hidden" name="status" value="{{ request.GET.status }}">
+              {% endif %}
+              <button type="submit" class="btn w-100 text-start">A-Z</button>
+            </form>
+          </li>
+          <li>
+            <form method="get" class="dropdown-item p-0">
+              <input type="hidden" name="ordem" value="za">
+              {% if request.GET.pesquisa %}
+                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+              {% endif %}
+              {% if request.GET.status %}
+                <input type="hidden" name="status" value="{{ request.GET.status }}">
+              {% endif %}
+              <button type="submit" class="btn w-100 text-start">Z-A</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+
+      <!-- BOTÃO LIMPAR -->
+      <a href="{% url 'colaboradores' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-x-circle"></i> Limpar Filtros
+      </a>
+
+    </div>
+  </form>
+
+  <!-- TABELA -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+      <thead class="table-success">
+        <tr>
+          <th>COLABORADOR</th>
+          <th>EMAIL</th>
+          <th>STATUS</th>
+          <th>AÇÕES</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for colaborador in colaboradores %}
+        <tr>
+          <td>{{ colaborador.username }}</td>
+          <td>{{ colaborador.email }}</td>
+          <td>
+            <form action="{% url 'alternar_status_colaborador' colaborador.id %}" method="post" style="display: inline;">
+              {% csrf_token %}
+              {% if colaborador.is_active %}
+                <button type="submit" class="btn btn-sm btn-success">Ativo</button>
+              {% else %}
+                <button type="submit" class="btn btn-sm btn-danger">Inativo</button>
+              {% endif %}
+            </form>
+          </td>
+          <td class="d-flex gap-2">
+            <a href="{% url 'editar_colaborador' colaborador.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <!-- Botão que chama o modal -->
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ colaborador.id }}">
+              <i class="bi bi-trash"></i>
+            </button>
+
+            <!-- Modal de confirmação -->
+            <div class="modal fade" id="confirmarExclusao{{ colaborador.id }}" tabindex="-1" aria-labelledby="modalLabel{{ colaborador.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalLabel{{ colaborador.id }}">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                  </div>
+                  <div class="modal-body">
+                    Tem certeza de que deseja excluir o colaborador <strong>{{ colaborador.username }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="{% url 'excluir_colaborador' colaborador.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">Nenhum colaborador encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+
+{% endblock %}

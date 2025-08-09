@@ -1,0 +1,40 @@
+{% extends 'ipe_roxo/partials/base.html' %}
+{% load static %}
+
+{% block title %}À Sombra do Ipê{% endblock %}
+
+{% block content %}
+  {% include 'ipe_roxo/partials/navbar_index.html' %}
+
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="w-100" style="max-width: 400px;">
+      <h2 class="text-center fw-bold mb-4">Bem-vindo Colaborador</h2>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- Campo de email -->
+        <div class="input-group mb-3">
+          <span class="input-group-text"><i class="bi bi-at"></i></span>
+          <input type="email" class="form-control" placeholder="Digite seu email de acesso" name="email" required>
+        </div>
+
+        <!-- Campo de senha -->
+        <div class="input-group mb-2">
+          <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+          <input type="password" class="form-control" placeholder="Digite sua senha de acesso" name="senha" required>
+        </div>
+
+        <!-- Link de esqueceu a senha -->
+        <div class="d-flex justify-content-end mb-3">
+          <small><a href="#" class="text-decoration-none">Esqueceu a senha? <strong>Clique aqui</strong></a></small>
+        </div>
+
+        <!-- Botão de login -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-success rounded-pill">Acessar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

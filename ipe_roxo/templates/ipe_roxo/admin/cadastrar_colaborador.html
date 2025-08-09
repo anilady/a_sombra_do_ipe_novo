@@ -1,0 +1,58 @@
+{% extends 'ipe_roxo/partials/base.html' %}
+{% load static %}
+{% block main_classes %}d-flex justify-content-center align-items-center{% endblock %}
+
+{% with centralizar=True %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/colab.css' %}">
+
+  {% include 'ipe_roxo/partials/navbar_index.html' %}
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-body">
+            <h2 class="card-title text-center mb-4">Cadastro de Colaborador</h2>
+
+            {% if messages %}
+              <div class="container mt-3">
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <form method="POST">
+              {% csrf_token %}
+              {{ form.non_field_errors }}
+
+              {% for field in form %}
+                <div class="mb-3">
+                  <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-success">Salvar</button>
+                <a href="{% url 'home_admin' %}" class="btn btn-danger">Cancelar</a>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% endwith %}

@@ -1,0 +1,44 @@
+{% extends 'ipe_roxo/partials/base.html' %}
+{% load static %}
+{% block title %}À Sombra do Ipê{% endblock title %}
+{% block content %}
+
+{% include 'ipe_roxo/partials/navbar_index.html' %}
+
+
+
+<!-- Seção com imagem de fundo e texto -->
+<header class="vh-100 d-flex justify-content-center align-items-center text-center text-white"
+        style="background-image: url('{% static 'img/bg-ipe.png' %}'); background-size: cover; background-position: center;">
+  <div>
+    <h1 class="display-4 fw-bold">À Sombra do Ipê</h1>
+    <p class="lead">Uma cidade mais arborizada</p>
+  </div>
+</header>
+
+<!-- Seção do projeto -->
+<section class="projeto-section container py-5">
+  <div class="row align-items-center">
+    <div class="col-md-7 text-section mb-4 mb-md-0">
+      <h1 class="fw-bold display-5 text-dark mb-3">À Sombra do Ipê</h1>
+      <hr class="mb-4">
+      <p class="fs-5 text-muted text-justify">
+        Criado em 2015, o projeto <strong>À Sombra do Ipê</strong> nasceu com o propósito de despertar a consciência socioambiental entre jovens e membros da comunidade local. Localizado em Bom Jesus da Lapa, o projeto atua diretamente na promoção da <strong>arborização urbana</strong>, da <strong>educação ambiental</strong> e no fortalecimento da cidadania ativa.
+      </p>
+      <p class="fs-5 text-muted text-justify">
+        Como resultado prático dessa iniciativa, foi implantado o <strong>Viveiro Educador</strong> – um espaço de aprendizado onde estudantes cultivam mudas de árvores, com apoio da Secretaria Municipal de Meio Ambiente. Essas mudas são posteriormente plantadas em bairros da cidade, gerando um impacto positivo na qualidade de vida da população e na preservação ambiental.
+      </p>
+      <p class="fs-5 text-muted text-justify">
+        Através da união entre educação, meio ambiente e participação cidadã, o projeto se tornou um exemplo inspirador de como a juventude pode ser protagonista na construção de um futuro mais sustentável.
+      </p>
+    </div>
+
+    <div class="col-md-5 text-center">
+      <img src="{% static 'img/alun1.png' %}" class="img-fluid rounded shadow-sm mb-2" style="max-width: 70%;" alt="Imagem do projeto">
+      <small class="text-muted d-block">Plantio de mudas pelos estudantes do Projeto À Sombra do Ipê</small>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% load static %}
+
+
+<nav class="navbar navbar-expand-lg navbar-dark px-4">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+      <img src="{% static 'img/sombra.jpeg' %} " alt="Logo" width="60" height="60" class="rounded-circle">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-between" id="navbarContent">
+      <ul class="navbar-nav gap-3">
+        <li class="nav-item">
+          <a class="nav-link" href={% url 'cadastrar_planta' %}>Cadastrar Planta/Cuidador</a>
+        </li>
+
+
+        <li class="nav-item">
+          <a class="nav-link" href={% url 'formularios_enviados' %}>Formulários Enviados</a>
+        </li>
+      </ul>
+
+
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle fs-3"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'ajuda' %}"><i class="bi bi-question-circle-fill text-primary"></i> Ajuda</a></li>
+            <li><a class="dropdown-item" href="{% url 'home' %}"><i class="bi bi-box-arrow-right text-danger"></i> Sair</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  
+
+  </nav>
+  <div style="height: 3px; background-color: var(--verde-ipe); width: 100%; margin: 0;"></div>
