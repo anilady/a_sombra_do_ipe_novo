@@ -1,20 +1,30 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from .models import CustomUser
 from .forms import ColaboradorForm
+from .forms import ColaboradorEditForm
+from django.http import JsonResponse
+from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views import View
+
 
 from .forms import PlantaCuidadorForm
 from .models import PlantaCuidador
-from django.db.models import Count, Q
-from datetime import date
+from django.db.models import Q
 from django.views.decorators.http import require_POST
 
 from django.contrib.auth import authenticate, login
 
-
+def csrf_failure(request, reason=""):
+    context = {
+        'reason': reason,
+    }
+    return render(request, 'ipe_roxo/index/csrf_failure.html', context, status=403)
 
 def home(request):
     return render(request, 'ipe_roxo/index/home.html')
@@ -135,18 +145,19 @@ def editar_colaborador(request, colaborador_id):
     colaborador = get_object_or_404(CustomUser, id=colaborador_id, tipo='COLAB')
     
     if request.method == 'POST':
-        form = ColaboradorForm(request.POST, instance=colaborador)
+        form = ColaboradorEditForm(request.POST, instance=colaborador)
         if form.is_valid():
             form.save()
             messages.success(request, 'Dados do colaborador atualizados!')
             return redirect('colaboradores')
     else:
-        form = ColaboradorForm(instance=colaborador)
+        form = ColaboradorEditForm(instance=colaborador)
     
     return render(request, 'ipe_roxo/admin/editar_colaborador.html', {
         'form': form,
         'colaborador': colaborador
     })
+
 
 def listar_colaboradores(request):
     colaboradores = CustomUser.objects.all()
@@ -162,9 +173,9 @@ def listar_colaboradores(request):
     # Filtro por status
     status = request.GET.get('status')
     if status == 'ativos':
-        colaboradores = colaboradores.filter(is_active=True)
+        colaboradores = colaboradores.filter(ativo=True)
     elif status == 'inativos':
-        colaboradores = colaboradores.filter(is_active=False)
+        colaboradores = colaboradores.filter(ativo=False)
 
     # Ordenação
     ordem = request.GET.get('ordem')
@@ -189,6 +200,66 @@ def formularios_enviados(request):
     return render(request, 'ipe_roxo/colaborador/formularios_enviados.html', {'formularios': formularios})
 
 
+def is_admin(user):
+    return user.tipo == 'ADMIN'
+
+@user_passes_test(is_admin)
+@user_passes_test(lambda u: u.tipo == 'ADMIN')  # Garante que só admins acessem
+def formularios_recebidos(request):
+    # Consulta otimizada
+    formularios = PlantaCuidador.objects.filter(
+        status='PENDENTE'
+    ).select_related('colaborador').order_by('-horario_cadastro')
+    
+    # Debug (aparecerá no terminal onde o servidor está rodando)
+    print("\n" + "="*40)
+    print("DEBUG FORMULÁRIOS RECEBIDOS")
+    print(f"Usuário logado: {request.user} (Tipo: {getattr(request.user, 'tipo', 'N/D')})")
+    print(f"Total de formulários pendentes: {formularios.count()}")
+    
+    if formularios.exists():
+        sample = formularios.first()
+        print(f"\nExemplo do primeiro formulário:")
+        print(f"ID: {sample.id} | Status: {sample.status}")
+        print(f"Colaborador: {sample.colaborador}")
+        print(f"Horário: {sample.horario_cadastro}")
+    else:
+        print("\nNenhum formulário encontrado com status='PENDENTE'")
+    print("="*40 + "\n")
+    
+    return render(request, 'ipe_roxo/admin/formularios_recebidos.html', {
+        'formularios': formularios  # Agora usando a variável correta
+    })
+
+class BaseFormularioView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.tipo == 'ADMIN'
+
+    def get_formulario(self):
+        return get_object_or_404(PlantaCuidador, pk=self.kwargs['pk'])
+
+class FormularioAprovarView(BaseFormularioView):
+    def post(self, request, *args, **kwargs):
+        formulario = self.get_formulario()
+        formulario.status = 'APROVADO'
+        formulario.motivo_correcao = ''
+        formulario.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Formulário aprovado com sucesso'
+        })
+
+class FormularioCorrigirView(BaseFormularioView):
+    def post(self, request, *args, **kwargs):
+        formulario = self.get_formulario()
+        formulario.status = 'CORRECAO'
+        formulario.motivo_correcao = request.POST.get('motivo', '')
+        formulario.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Correções solicitadas com sucesso'
+        })
+############################################
 
 @login_required
 def cadastrar_planta_cuidador(request):
@@ -196,13 +267,23 @@ def cadastrar_planta_cuidador(request):
         form = PlantaCuidadorForm(request.POST, request.FILES)
         if form.is_valid():
             planta = form.save(commit=False)
-            planta.colaborador = request.user  # vincula o usuário logado
+            planta.colaborador = request.user  # Vincula o usuário logado
+            planta.horario_cadastro = timezone.now()  # Adiciona horário atual
             planta.save()
-            messages.success(request, 'Cadastro enviado com sucesso.')
-            return redirect('formularios_enviados')
+            messages.success(request, 'Cadastro enviado com sucesso! Aguarde aprovação.')
+            return redirect('cadastrar_planta')
+        else:
+            # Mostra erros específicos
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Erro no campo {form.fields[field].label}: {error}")
     else:
         form = PlantaCuidadorForm()
-    return render(request, 'ipe_roxo/colaborador/cadastro_plantas.html', {'form': form})
+    
+    return render(request, 'ipe_roxo/colaborador/cadastro_plantas.html', {
+        'form': form,
+        'hoje': timezone.now().strftime('%Y-%m-%d')  # Para limitar a data no HTML
+    })
 
 @login_required
 def editar_formulario(request, id):

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'ipe_roxo'
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -128,6 +129,8 @@ MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'ipe_roxo.CustomUser'
+CSRF_FAILURE_VIEW = 'ipe_roxo.views.csrf_failure'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

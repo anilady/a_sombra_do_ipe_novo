@@ -1,40 +1,63 @@
 {% extends 'ipe_roxo/partials/base.html' %}
 {% load static %}
+{% block main_classes %}d-flex justify-content-center align-items-center{% endblock %}
+
 
 {% block title %}À Sombra do Ipê{% endblock %}
 
 {% block content %}
   {% include 'ipe_roxo/partials/navbar_index.html' %}
 
-  <div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="w-100" style="max-width: 400px;">
-      <h2 class="text-center fw-bold mb-4">Bem-vindo Colaborador</h2>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-body">
+            <h2 class="card-title text-center fw-bold mb-4">Bem-vindo Colaborador</h2>
 
-      <form method="POST">
-        {% csrf_token %}
+            {% if messages %}
+              <div class="container mb-3">
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
 
-        <!-- Campo de email -->
-        <div class="input-group mb-3">
-          <span class="input-group-text"><i class="bi bi-at"></i></span>
-          <input type="email" class="form-control" placeholder="Digite seu email de acesso" name="email" required>
-        </div>
+            <form method="POST" class="p-2">
+              {% csrf_token %}
 
-        <!-- Campo de senha -->
-        <div class="input-group mb-2">
-          <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-          <input type="password" class="form-control" placeholder="Digite sua senha de acesso" name="senha" required>
-        </div>
+              <!-- Campo de email -->
+              <div class=" mb-3">
+                <label for="email" class="form-label">E-mail</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-at"></i></span>
+                  <input type="email" class="form-control" placeholder="Digite seu email de acesso" name="email" required>
+                </div>
+              </div>
 
-        <!-- Link de esqueceu a senha -->
-        <div class="d-flex justify-content-end mb-3">
-          <small><a href="#" class="text-decoration-none">Esqueceu a senha? <strong>Clique aqui</strong></a></small>
-        </div>
+              <!-- Campo de senha -->
+              <div class="mb-3">
+                <label for="senha" class="form-label">Senha</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" class="form-control" placeholder="Digite sua senha de acesso" name="senha" required>
+                </div>
+              </div>
 
-        <!-- Botão de login -->
-        <div class="d-grid">
-          <button type="submit" class="btn btn-success rounded-pill">Acessar</button>
-        </div>
-      </form>
+              <!-- Link de esqueceu a senha -->
+              <div class="d-flex justify-content-end mb-3">
+                <small><a href="#" class="text-decoration-none">Esqueceu a senha? <strong>Clique aqui</strong></a></small>
+              </div>
+
+              <!-- Botão de login -->
+              <div class="d-grid">
+                <button type="submit" class="btn btn-success rounded-pill">Acessar</button>
+              </div>
+            </form>
+          
+          </div>
+        </div> 
+      </div>
     </div>
   </div>
 {% endblock %}

@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+import uuid
+
+
 
 class CustomUser(AbstractUser):
     TIPO_CHOICES = [
@@ -8,23 +12,39 @@ class CustomUser(AbstractUser):
     ]
     tipo = models.CharField(max_length=5, choices=TIPO_CHOICES, default='COLAB')
     ativo = models.BooleanField(default=True)
+    funcao = models.CharField(max_length=100, blank=True, null=True)  # Novo campo função
+
 
     def __str__(self):
         return self.username
 
 
-
+#########################################################################################
 
 class PlantaCuidador(models.Model):
     STATUS_CHOICES = [
-        ('pendente', 'Pendente'),
-        ('aceito', 'Aceito'),
-        ('recusado', 'Recusado'),
+        ('PENDENTE', 'Pendente de revisão'),
+        ('APROVADO', 'Aprovado'),
+        ('CORRECAO', 'Necessita correções'),
     ]
-
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='PENDENTE'
+    )
+    admin_responsavel = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='formularios_revisados'
+    )
+    motivo_correcao = models.TextField(blank=True, null=True)
+    numero_registro = models.CharField(max_length=12,unique=True,null=True,blank=True,editable=False)
+    horario_cadastro = models.DateTimeField(default=timezone.now)  # Novo campo
     colaborador = models.ForeignKey( CustomUser, on_delete=models.CASCADE, related_name='formularios')
     nome = models.CharField(max_length=100)
-    telefone = models.CharField(max_length=20)
+    telefone = models.CharField(max_length=11)
     cidade = models.CharField(max_length=100)
     bairro = models.CharField(max_length=100)
     rua = models.CharField(max_length=100)
@@ -37,9 +57,14 @@ class PlantaCuidador(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendente')
     observacao_admin = models.TextField(blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.numero_registro:  # Só para novos registros
+            self.numero_registro = timezone.now().strftime("IP%Y%m") + str(uuid.uuid4().hex[:6]).upper()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.especie} - {self.colaborador.username}"
-    
+        return f"{self.numero_registro} - {self.nome}"
+
 
 
 

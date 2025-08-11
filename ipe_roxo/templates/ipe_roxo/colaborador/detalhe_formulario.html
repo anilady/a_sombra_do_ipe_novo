@@ -5,9 +5,8 @@
 
 {% block content %}
 {% include 'ipe_roxo/partials/navbar_colaborador.html' %}
-
 <div class="container my-5">
-  <h2 class="mb-4 text-center">Formulários Enviados</h2>
+  <h2 class="mb-4 text-center">Formulários Recebidos</h2>
 
   {% if messages %}
     <div class="mb-3">
@@ -19,40 +18,40 @@
 
   {% if formularios %}
     <div class="table-responsive">
-      <table class="table table-bordered table-striped table-hover">
-        <thead class="table-success">
+      <table class="table table-striped table-bordered">
+        <thead class="table-dark">
           <tr>
             <th>Nº Registro</th>
             <th>Espécie</th>
             <th>Bairro</th>
-            <th>Data de Envio</th>
+            <th>Data de Recebimento</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {% for f in formularios %}
             <tr>
+              <!-- Número de Registro clicável -->
               <td>
-                <a href="#"      style="color: inherit; text-decoration: none; font-weight: bold;">
+                <a href="{% url 'detalhe_formulario' f.id %}" 
+                   style="color: inherit; text-decoration: none; font-weight: bold;">
                   {{ f.numero_registro }}
                 </a>
-                {% comment %} {% url 'detalhe_formulario' f.id %} {% endcomment %}
               </td>
+
               <td>{{ f.especie }}</td>
               <td>{{ f.bairro }}</td>
-              <td>{{ f.horario_cadastro|date:"d/m/Y" }}</td>
+              <td>{{ f.data_recebimento|date:"d/m/Y" }}</td>
+
+              <!-- Botão de status -->
               <td>
-                <a href="#" class="btn btn-sm
-                  {% if f.status == 'PENDENTE' %}btn-warning
-                  {% elif f.status == 'APROVADO' %}btn-success
-                  {% elif f.status == 'CORRECAO' %}btn-danger
-                  {% else %}btn-secondary
-                  {% endif %}"
-                  {% if f.status == 'CORRECAO' and f.motivo_correcao %}
-                  data-bs-toggle="tooltip" title="{{ f.motivo_correcao }}"
-                  {% endif %}>
-                  {{ f.get_status_display }}
-                </a>
+                {% if f.status == 'novo' %}
+                  <span class="badge bg-primary">Novo</span>
+                {% elif f.status == 'aceito' %}
+                  <span class="badge bg-success">Aceito</span>
+                {% elif f.status == 'atualizado' %}
+                  <span class="badge bg-warning text-dark">Atualizado</span>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -61,7 +60,7 @@
     </div>
   {% else %}
     <div class="alert alert-info text-center">
-      Nenhum formulário enviado ainda.
+      Nenhum formulário recebido.
     </div>
   {% endif %}
 </div>

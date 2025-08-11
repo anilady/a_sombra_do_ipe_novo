@@ -20,6 +20,8 @@
 
 
 <body>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+
   <div class="wrapper d-flex flex-column min-vh-100">
     <header>
       {% block navbar %}

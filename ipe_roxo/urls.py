@@ -13,6 +13,16 @@ urlpatterns = [
 
 
     path('formularios/', views.formularios_enviados, name='formularios_enviados'),
+    path('formularios-recebidos/', views.formularios_recebidos, name='formularios_recebidos'),
+
+
+
+    path('api/formularios/<int:pk>/aprovar/', views.FormularioAprovarView.as_view(), name='formulario-aprovar'),
+    path('api/formularios/<int:pk>/corrigir/', views.FormularioCorrigirView.as_view(), name='formulario-corrigir'),
+    
+
+
+
     path('formulario/<int:id>/editar/', views.editar_formulario, name='editar_formulario'),
     # path('formulario/<int:id>/', views.detalhe_formulario, name='detalhe_formulario'),
     path('formulario/<int:id>/excluir/', views.excluir_formulario, name='excluir_formulario'),

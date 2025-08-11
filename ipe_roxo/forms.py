@@ -5,6 +5,9 @@ from .models import PlantaCuidador
 from .models import Planta
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser  
+import re
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 class ColaboradorForm(UserCreationForm):
@@ -12,10 +15,11 @@ class ColaboradorForm(UserCreationForm):
     
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email','funcao', 'password1', 'password2']
         labels = {
             'username': 'Nome de usuário',
-            'email': 'E-mail'
+            'email': 'E-mail',
+            'funcao': 'Função'
         }
     
     def __init__(self, *args, **kwargs):
@@ -30,12 +34,27 @@ class ColaboradorForm(UserCreationForm):
         return email
 
 
+class ColaboradorEditForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email','funcao']  # só esses campos, sem senha e sem função
+
+        labels = {
+            'username': 'Nome de usuário',
+            'email': 'E-mail',
+            'funcao': 'Função'
+        }
+
+##############################################################################################################
+
 class PlantaCuidadorForm(forms.ModelForm):
     class Meta:
         model = PlantaCuidador
-        fields = ['nome', 'telefone', 'cidade', 'bairro', 'rua', 'numero', 'especie', 'idade',  'foto']
+        fields = ['nome', 'telefone', 'cidade', 'bairro', 'rua', 'numero', 'especie', 'idade', 'data', 'foto']
         widgets = {
             'data': forms.DateInput(attrs={'type': 'date'}),
+            'telefone': forms.TextInput(attrs={'placeholder': 'Com ddd '}),
+            'numero': forms.NumberInput(attrs={'min': 1}),
         }
         labels = {
             'nome': 'Nome do Cuidador',
@@ -49,6 +68,25 @@ class PlantaCuidadorForm(forms.ModelForm):
             'data': 'Data do Plantio',
             'foto': 'Foto da Planta',
         }
+
+    def clean_telefone(self):
+        telefone = self.cleaned_data.get('telefone')
+        if not re.match(r'^\d{11}$', telefone):  # Verifica 9 dígitos
+            raise ValidationError("O telefone deve conter exatamente 9 números")
+        return telefone
+
+    def clean_numero(self):
+        numero = self.cleaned_data.get('numero')
+        if not str(numero).isdigit():
+            raise ValidationError("O número deve conter apenas dígitos")
+        return numero
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.horario_cadastro = timezone.now()  # Adiciona horário atual automaticamente
+        if commit:
+            instance.save()
+        return instance
 
 
 class PlantaForm(forms.ModelForm):

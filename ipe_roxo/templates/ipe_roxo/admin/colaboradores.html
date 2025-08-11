@@ -132,6 +132,7 @@
         <tr>
           <th>COLABORADOR</th>
           <th>EMAIL</th>
+          <th>FUNÇÃO</th>
           <th>STATUS</th>
           <th>AÇÕES</th>
         </tr>
@@ -141,10 +142,11 @@
         <tr>
           <td>{{ colaborador.username }}</td>
           <td>{{ colaborador.email }}</td>
+          <td>{{ colaborador.funcao }}</td>
           <td>
             <form action="{% url 'alternar_status_colaborador' colaborador.id %}" method="post" style="display: inline;">
               {% csrf_token %}
-              {% if colaborador.is_active %}
+              {% if colaborador.ativo %}
                 <button type="submit" class="btn btn-sm btn-success">Ativo</button>
               {% else %}
                 <button type="submit" class="btn btn-sm btn-danger">Inativo</button>
