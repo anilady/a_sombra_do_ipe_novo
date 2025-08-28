@@ -266,16 +266,36 @@ class BaseFormularioView(LoginRequiredMixin, StaffRequiredMixin, View):
     def get_formulario(self):
         return get_object_or_404(self.model, pk=self.kwargs['pk'])
 
-class FormularioAprovarView(BaseFormularioView):
-    """View para aprovar formulários - SOME da lista"""
+# class FormularioAprovarView(BaseFormularioView):
+#     """View para aprovar formulários - SOME da lista"""
     
+#     def post(self, request, *args, **kwargs):
+#         formulario = get_object_or_404(PlantaCuidador, pk=self.kwargs['pk'])
+#         formulario.status = 'APROVADO'
+#         print(">>> ALTERANDO STATUS PARA:", formulario.status)
+#         formulario.save()
+#         print(">>> SALVO NO BANCO")
+#         return JsonResponse({'success': True})
+
+class FormularioAprovarView(BaseFormularioView):
     def post(self, request, *args, **kwargs):
-        formulario = get_object_or_404(PlantaCuidador, id=id)
+        formulario = get_object_or_404(self.model, pk=self.kwargs['pk'])
+        
+        if formulario.status == 'APROVADO':
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Este formulário já foi aprovado.'
+            })
+
         formulario.status = 'APROVADO'
-        print(">>> ALTERANDO STATUS PARA:", formulario.status)
+        formulario.admin_responsavel = request.user
+        formulario.motivo_correcao = None
         formulario.save()
-        print(">>> SALVO NO BANCO")
-        return JsonResponse({'success': True})
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Formulário aprovado com sucesso!'
+        })
 
 class FormularioCorrigirView(BaseFormularioView):
     """View para solicitar correção - SOME da lista"""
