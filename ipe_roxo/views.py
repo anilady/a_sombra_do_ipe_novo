@@ -1,24 +1,28 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth import authenticate, login
 from .models import CustomUser
 from .forms import ColaboradorForm
 from .forms import ColaboradorEditForm
-from django.http import JsonResponse
 from django.utils import timezone
-from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views import View
 
 
 from .forms import PlantaCuidadorForm
+from django.http import JsonResponse
 from .models import PlantaCuidador
+
+
+from django.views.generic import View
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+
+
 from django.db.models import Q
 from django.views.decorators.http import require_POST
-
 from django.contrib.auth import authenticate, login
+
+##############################################
+
 
 def csrf_failure(request, reason=""):
     context = {
@@ -90,8 +94,7 @@ def ajuda(request):
 
 
 
-def formularios_recebidos(request):
-    return render(request, 'ipe_roxo/admin/formularios_recebidos.html')
+
 
 
 def cadastrar_colaborador(request):
@@ -103,11 +106,14 @@ def cadastrar_colaborador(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.tipo = 'COLAB'  # Garante que seja sempre colaborador
+            user.is_staff = False
+
             user.save()
             messages.success(request, 'Colaborador cadastrado com sucesso!')
             return redirect('colaboradores')
     else:
         form = ColaboradorForm()
+
     
     return render(request, 'ipe_roxo/admin/cadastrar_colaborador.html', {'form': form})
 
@@ -195,73 +201,6 @@ def listar_colaboradores(request):
 ###########################################################################################################
 
 @login_required
-def formularios_enviados(request):
-    formularios = PlantaCuidador.objects.filter(colaborador=request.user).order_by('-data_envio')
-    return render(request, 'ipe_roxo/colaborador/formularios_enviados.html', {'formularios': formularios})
-
-
-def is_admin(user):
-    return user.tipo == 'ADMIN'
-
-@user_passes_test(is_admin)
-@user_passes_test(lambda u: u.tipo == 'ADMIN')  # Garante que só admins acessem
-def formularios_recebidos(request):
-    # Consulta otimizada
-    formularios = PlantaCuidador.objects.filter(
-        status='PENDENTE'
-    ).select_related('colaborador').order_by('-horario_cadastro')
-    
-    # Debug (aparecerá no terminal onde o servidor está rodando)
-    print("\n" + "="*40)
-    print("DEBUG FORMULÁRIOS RECEBIDOS")
-    print(f"Usuário logado: {request.user} (Tipo: {getattr(request.user, 'tipo', 'N/D')})")
-    print(f"Total de formulários pendentes: {formularios.count()}")
-    
-    if formularios.exists():
-        sample = formularios.first()
-        print(f"\nExemplo do primeiro formulário:")
-        print(f"ID: {sample.id} | Status: {sample.status}")
-        print(f"Colaborador: {sample.colaborador}")
-        print(f"Horário: {sample.horario_cadastro}")
-    else:
-        print("\nNenhum formulário encontrado com status='PENDENTE'")
-    print("="*40 + "\n")
-    
-    return render(request, 'ipe_roxo/admin/formularios_recebidos.html', {
-        'formularios': formularios  # Agora usando a variável correta
-    })
-
-class BaseFormularioView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def test_func(self):
-        return self.request.user.tipo == 'ADMIN'
-
-    def get_formulario(self):
-        return get_object_or_404(PlantaCuidador, pk=self.kwargs['pk'])
-
-class FormularioAprovarView(BaseFormularioView):
-    def post(self, request, *args, **kwargs):
-        formulario = self.get_formulario()
-        formulario.status = 'APROVADO'
-        formulario.motivo_correcao = ''
-        formulario.save()
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Formulário aprovado com sucesso'
-        })
-
-class FormularioCorrigirView(BaseFormularioView):
-    def post(self, request, *args, **kwargs):
-        formulario = self.get_formulario()
-        formulario.status = 'CORRECAO'
-        formulario.motivo_correcao = request.POST.get('motivo', '')
-        formulario.save()
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Correções solicitadas com sucesso'
-        })
-############################################
-
-@login_required
 def cadastrar_planta_cuidador(request):
     if request.method == 'POST':
         form = PlantaCuidadorForm(request.POST, request.FILES)
@@ -270,58 +209,110 @@ def cadastrar_planta_cuidador(request):
             planta.colaborador = request.user  # Vincula o usuário logado
             planta.horario_cadastro = timezone.now()  # Adiciona horário atual
             planta.save()
+
+
             messages.success(request, 'Cadastro enviado com sucesso! Aguarde aprovação.')
-            return redirect('cadastrar_planta')
-        else:
-            # Mostra erros específicos
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Erro no campo {form.fields[field].label}: {error}")
+            return redirect('formularios_enviados')
+
     else:
         form = PlantaCuidadorForm()
     
     return render(request, 'ipe_roxo/colaborador/cadastro_plantas.html', {
         'form': form,
+
         'hoje': timezone.now().strftime('%Y-%m-%d')  # Para limitar a data no HTML
     })
 
-@login_required
-def editar_formulario(request, id):
-    # Aqui pega o objeto PlantaCuidador, não o form!
-    formulario = get_object_or_404(PlantaCuidador, id=id, colaborador=request.user)
 
-    if formulario.status == 'aceito':
-        messages.error(request, 'Formulário aceito não pode ser editado.')
-        return redirect('formularios_enviados')
-
-    if request.method == 'POST':
-        form = PlantaCuidadorForm(request.POST, request.FILES, instance=formulario)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Formulário atualizado com sucesso.')
-            return redirect('formularios_enviados')
-    else:
-        form = PlantaCuidadorForm(instance=formulario)
-
-    return render(request, 'ipe_roxo/colaborador/editar_formulario.html', {'form': form})
 
 @login_required
-def excluir_formulario(request, id):
-    formulario = get_object_or_404(PlantaCuidador, id=id, colaborador=request.user)
-    formulario.delete()
-    messages.success(request, 'Formulário excluído com sucesso.')
-    return redirect('formularios_enviados')
+def formularios_enviados(request):
+    formularios = PlantaCuidador.objects.filter(colaborador=request.user).order_by('-data_envio')
+    return render(request, 'ipe_roxo/colaborador/formularios_enviados.html', {'formularios': formularios})
+
+
+# Detalhes de uma planta
+@login_required
+def detalhes_formulario(request, pk):
+    planta = get_object_or_404(PlantaCuidador, pk=pk, colaborador=request.user)
+    return render(request, "ipe_roxo/colaborador/detalhe_formulario.html", {"planta": planta})
+
+
+###################################################################################################
+def is_admin(user):
+    return user.is_authenticated and user.tipo == 'ADMIN'
 
 @login_required
-def reenviar_formulario(request, id):
-    formulario = get_object_or_404(PlantaCuidador, id=id, colaborador=request.user)
+@user_passes_test(is_admin)
+def formularios_recebidos(request):
+    # Mostra apenas formulários pendentes (aguardando análise do administrador)
+    formularios = PlantaCuidador.objects.filter(
+        status='PENDENTE'
+    ).select_related('colaborador').order_by('-horario_cadastro')
+    
+    return render(request, 'ipe_roxo/admin/formularios_recebidos.html', {
+        'formularios': formularios
+    })
 
-    if formulario.status != 'recusado':
-        messages.error(request, 'Somente formulários recusados podem ser reenviados.')
-        return redirect('formularios_enviados')
+class StaffRequiredMixin(UserPassesTestMixin):
+    """Mixin para verificar se o usuário é admin"""
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.tipo == 'ADMIN'
 
-    formulario.status = 'pendente'
-    formulario.observacao_admin = ''
-    formulario.save()
-    messages.success(request, 'Formulário reenviado para análise.')
-    return redirect('formularios_enviados')
+class BaseFormularioView(LoginRequiredMixin, StaffRequiredMixin, View):
+    """View base para ações de formulário"""
+    model = PlantaCuidador
+    
+    def get_formulario(self):
+        return get_object_or_404(self.model, pk=self.kwargs['pk'])
+
+class FormularioAprovarView(BaseFormularioView):
+    """View para aprovar formulários - SOME da lista"""
+    
+    def post(self, request, *args, **kwargs):
+        formulario = get_object_or_404(PlantaCuidador, id=id)
+        formulario.status = 'APROVADO'
+        print(">>> ALTERANDO STATUS PARA:", formulario.status)
+        formulario.save()
+        print(">>> SALVO NO BANCO")
+        return JsonResponse({'success': True})
+
+class FormularioCorrigirView(BaseFormularioView):
+    """View para solicitar correção - SOME da lista"""
+    
+    def post(self, request, *args, **kwargs):
+        formulario = self.get_formulario()
+        
+        try:
+            motivo = request.POST.get('motivo', '').strip()
+            
+            if not motivo:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Motivo da correção é obrigatório.'
+                })
+            
+            if len(motivo) < 10:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'O motivo deve ter pelo menos 10 caracteres.'
+                })
+            
+            # SOLICITA CORREÇÃO - status muda para CORRECAO
+            formulario.status = 'CORRECAO'
+            formulario.motivo_correcao = motivo
+            formulario.admin_responsavel = request.user
+            formulario.save()
+            print(">>> CORRIGINDO FORMULÁRIO", formulario.id, motivo)
+
+            
+            return JsonResponse({
+                'status': 'success', 
+                'message': 'Correção solicitada com sucesso! O formulário será revisado novamente após as correções.'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Erro ao solicitar correção: {str(e)}'
+            })

@@ -1,67 +1,157 @@
 {% extends 'ipe_roxo/partials/base.html' %}
 {% load static %}
 
-{% block title %}Formulários Enviados{% endblock title %}
+{% block title %}Detalhes da Planta{% endblock title %}
 
 {% block content %}
+
 {% include 'ipe_roxo/partials/navbar_colaborador.html' %}
-<div class="container my-5">
-  <h2 class="mb-4 text-center">Formulários Recebidos</h2>
 
-  {% if messages %}
-    <div class="mb-3">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
 
-  {% if formularios %}
-    <div class="table-responsive">
-      <table class="table table-striped table-bordered">
-        <thead class="table-dark">
-          <tr>
-            <th>Nº Registro</th>
-            <th>Espécie</th>
-            <th>Bairro</th>
-            <th>Data de Recebimento</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for f in formularios %}
-            <tr>
-              <!-- Número de Registro clicável -->
-              <td>
-                <a href="{% url 'detalhe_formulario' f.id %}" 
-                   style="color: inherit; text-decoration: none; font-weight: bold;">
-                  {{ f.numero_registro }}
-                </a>
-              </td>
+          <!-- Título -->
+          <h2 class="card-title text-center mb-4 text-success fw-bold">
+            🌱 Cadastro de Planta
+          </h2>
+          <hr>
 
-              <td>{{ f.especie }}</td>
-              <td>{{ f.bairro }}</td>
-              <td>{{ f.data_recebimento|date:"d/m/Y" }}</td>
+          <!-- Mensagens do Django -->
+          {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} rounded-3 shadow-sm">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
 
-              <!-- Botão de status -->
-              <td>
-                {% if f.status == 'novo' %}
-                  <span class="badge bg-primary">Novo</span>
-                {% elif f.status == 'aceito' %}
-                  <span class="badge bg-success">Aceito</span>
-                {% elif f.status == 'atualizado' %}
-                  <span class="badge bg-warning text-dark">Atualizado</span>
+          <!-- Dados da Planta -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">👤 Nome do Cuidador:</label>
+              <p class="text-muted">{{ planta.nome }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">📞 Telefone:</label>
+              <p class="text-muted">{{ planta.telefone }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">🏙️ Cidade:</label>
+              <p class="text-muted">{{ planta.cidade }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">📍 Bairro:</label>
+              <p class="text-muted">{{ planta.bairro }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">🛣️ Rua:</label>
+              <p class="text-muted">{{ planta.rua }} - {{ planta.numero }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">🌳 Espécie:</label>
+              <p class="text-muted">{{ planta.especie }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">📑 Nº Registro:</label>
+              <p class="text-muted">{{ planta.numero_registro }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">⏳ Idade no Plantio:</label>
+              <p class="text-muted">{{ planta.idade }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">🗓️ Data de Cadastro:</label>
+              <p class="text-muted">{{ planta.data_envio|date:"d/m/Y H:i" }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">🌱 Data do Plantio:</label>
+              <p class="text-muted">{{ planta.data }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">🌱 Status da Planta:</label>
+
+                {% if user.tipo == 'COLAB' and planta.colaborador == user %}  
+                    <!-- Apenas o colaborador dono da planta pode alternar -->
+                    <form action="#" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        {% if planta.ativo %}
+                            <button type="submit" class="btn btn-sm btn-success">Ativo</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-danger">Inativo</button>
+                        {% endif %}
+                    </form>
+                {% else %}
+                    <!-- Admin ou outros usuários só veem o status -->
+                    {% if planta.ativo %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inativo</span>
+                    {% endif %}
                 {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">📌 Status:</label><br>
+              <button class="btn btn-sm 
+                {% if planta.status == 'APROVADO' %}
+                  btn-success
+                {% elif planta.status == 'PENDENTE' %}
+                  btn-warning
+                {% elif planta.status == 'CORRECAO' %}
+                  btn-danger
+                {% else %}
+                  btn-secondary
+                {% endif %}
+              ">
+                {{ planta.status }}
+              </button>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">⚠️ Motivo de Correção:</label>
+              <p class="text-muted">{{ planta.motivo_correcao|default:"-" }}</p>
+            </div>
+
+            <div class="col-12 text-center">
+              <label class="form-label fw-bold">📷 Foto:</label><br>
+              {% if planta.foto %}
+                <img src="{{ planta.foto.url }}" class="img-fluid rounded shadow-sm" style="max-height: 200px;" alt="Foto da planta">
+              {% else %}
+                <p class="text-muted">Nenhuma foto enviada.</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div class="d-flex justify-content-between mt-4">
+            <a href="#" class="btn btn-outline-success px-4">
+              {% comment %} {% url 'editar_formulario' planta.pk %} {% endcomment %}
+              ✏️ Editar
+            </a>
+            <a href="{% url 'formularios_enviados' %}" class="btn btn-outline-danger px-4">
+              
+              ❌ Voltar
+            </a>
+          </div>
+
+        </div>
+      </div>
     </div>
-  {% else %}
-    <div class="alert alert-info text-center">
-      Nenhum formulário recebido.
-    </div>
-  {% endif %}
+  </div>
 </div>
 {% endblock %}

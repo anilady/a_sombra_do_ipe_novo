@@ -13,8 +13,10 @@
       <div class="col-md-6">
         <div class="card shadow">
           <div class="card-body">
-            <h2 class="card-title text-center mb-4">Cadastro de Planta/Cuidador</h2>
-
+            <h2 class="card-title text-center mb-4 text-success fw-bold">
+              🌱 Cadastro Plantio
+            </h2>
+            <hr>
             {% if messages %}
               <div class="container mt-3">
                 {% for message in messages %}
@@ -42,9 +44,12 @@
                 </div>
               {% endfor %}
 
-              <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-success">Salvar</button>
-                <a href="#" class="btn btn-danger">Cancelar</a>
+          <!-- Botões -->
+              <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-outline-success px-4">✅ Salvar</button>
+                <a href="{% url 'home_colaborador' %}" class="btn btn-outline-danger px-4">
+                  ❌ Voltar
+                </a>
               </div>
             </form>
 

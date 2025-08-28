@@ -16,11 +16,12 @@
           <a class="nav-link" href="{% url 'colaboradores' %}">Colaboradores</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'formularios_recebidos' %}">Formulários Recebidos</a>
+          <a class="nav-link" href="{% url 'formularios-recebidos' %}">Formulários Recebidos</a>
         </li>
       </ul>
 
       <ul class="navbar-nav">
+        <h6>Olá, {{ request.user.first_name|default:request.user.username }}!</h6>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
             <i class="bi bi-person-circle fs-3"></i>

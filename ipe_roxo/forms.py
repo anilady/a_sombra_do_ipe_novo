@@ -2,12 +2,13 @@
 
 from django import forms
 from .models import PlantaCuidador
-from .models import Planta
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser  
 import re
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+
+
 
 
 class ColaboradorForm(UserCreationForm):
@@ -17,7 +18,7 @@ class ColaboradorForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'email','funcao', 'password1', 'password2']
         labels = {
-            'username': 'Nome de usuário',
+            'username': 'Usuário',
             'email': 'E-mail',
             'funcao': 'Função'
         }
@@ -72,7 +73,7 @@ class PlantaCuidadorForm(forms.ModelForm):
     def clean_telefone(self):
         telefone = self.cleaned_data.get('telefone')
         if not re.match(r'^\d{11}$', telefone):  # Verifica 9 dígitos
-            raise ValidationError("O telefone deve conter exatamente 9 números")
+            raise ValidationError("O telefone deve conter exatamente 9 números + ddd")
         return telefone
 
     def clean_numero(self):
@@ -89,7 +90,4 @@ class PlantaCuidadorForm(forms.ModelForm):
         return instance
 
 
-class PlantaForm(forms.ModelForm):
-    class Meta:
-        model = Planta
-        fields = ['especie', 'bairro']
+

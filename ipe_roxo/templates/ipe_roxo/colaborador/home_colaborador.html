@@ -10,140 +10,144 @@
 <main class="flex-grow-1 d-flex flex-column py-5 px-5">
     <div class="container-fluid">
 
-      <!-- Pesquisa e Filtros -->
-  <div class="col-12 mb-4">
-    <div class="container-pesquisa">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <!-- Boas-vindas -->
+      <div class="mb-4">
+        <h2>Bem-vindo(a), {{ request.user.first_name|default:request.user.username }}!</h2>
+      </div>
+          <!-- Pesquisa e Filtros -->
+      <div class="col-12 mb-4">
+        <div class="container-pesquisa">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-        <!-- Campo de pesquisa -->
-        <form method="get" class="input-group w-100 w-md-50">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar cuidador, espécie, bairro..." value="{{ request.GET.pesquisa }}">
-          <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
-          {% if request.GET.pesquisa %}
-            <a href="{% url 'painel_admin' %}" class="btn btn-outline-danger"><i class="bi bi-x"></i></a>
-          {% endif %}
-        </form>
+            <!-- Campo de pesquisa -->
+            <form method="get" class="input-group w-100 w-md-50">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar cuidador, espécie, bairro..." value="{{ request.GET.pesquisa }}">
+              <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
+              {% if request.GET.pesquisa %}
+                <a href="{% url 'painel_admin' %}" class="btn btn-outline-danger"><i class="bi bi-x"></i></a>
+              {% endif %}
+            </form>
 
-        <!-- Botões de filtro e ordenação -->
-        <div class="d-flex gap-2">
-          <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  <i class="bi bi-funnel"></i> Filtrar
-                </button>
-                <ul class="dropdown-menu">
-
-                  <!-- Cuidador -->
-                  {% for cuidador in cuidadores %}
-                    <li>
-                      <form method="get" class="dropdown-item p-0">
-                        <input type="hidden" name="cuidador" value="{{ cuidador }}">
-                        <button type="submit" class="btn w-100 text-start">Cuidador: {{ cuidador }}</button>
-                      </form>
-                    </li>
-                  {% endfor %}
-
-                  <!-- Bairro -->
-                  {% for bairro in bairros %}
-                    <li>
-                      <form method="get" class="dropdown-item p-0">
-                        <input type="hidden" name="endereco" value="{{ bairro }}">
-                        <button type="submit" class="btn w-100 text-start">Bairro: {{ bairro }}</button>
-                      </form>
-                    </li>
-                  {% endfor %}
-
-                  <!-- Espécie -->
-                  {% for especie in especies %}
-                    <li>
-                      <form method="get" class="dropdown-item p-0">
-                        <input type="hidden" name="especie" value="{{ especie }}">
-                        <button type="submit" class="btn w-100 text-start">Espécie: {{ especie }}</button>
-                      </form>
-                    </li>
-                  {% endfor %}
-
-                </ul>
-              </div>
-
-              <!-- ORDENAR Dropdown -->
+            <!-- Botões de filtro e ordenação -->
+            <div class="d-flex gap-2">
               <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  <i class="bi bi-sort-numeric-down"></i> Ordenar
-                </button>
-                <ul class="dropdown-menu">
-                  <li>
-                    <form method="get" class="dropdown-item p-0">
-                      <input type="hidden" name="ordenar" value="asc">
-                      <button type="submit" class="btn w-100 text-start">Idade Crescente</button>
-                    </form>
-                  </li>
-                  <li>
-                    <form method="get" class="dropdown-item p-0">
-                      <input type="hidden" name="ordenar" value="desc">
-                      <button type="submit" class="btn w-100 text-start">Idade Decrescente</button>
-                    </form>
-                  </li>
-                </ul>
-              </div>
+                    <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="bi bi-funnel"></i> Filtrar
+                    </button>
+                    <ul class="dropdown-menu">
 
+                      <!-- Cuidador -->
+                      {% for cuidador in cuidadores %}
+                        <li>
+                          <form method="get" class="dropdown-item p-0">
+                            <input type="hidden" name="cuidador" value="{{ cuidador }}">
+                            <button type="submit" class="btn w-100 text-start">Cuidador: {{ cuidador }}</button>
+                          </form>
+                        </li>
+                      {% endfor %}
+
+                      <!-- Bairro -->
+                      {% for bairro in bairros %}
+                        <li>
+                          <form method="get" class="dropdown-item p-0">
+                            <input type="hidden" name="endereco" value="{{ bairro }}">
+                            <button type="submit" class="btn w-100 text-start">Bairro: {{ bairro }}</button>
+                          </form>
+                        </li>
+                      {% endfor %}
+
+                      <!-- Espécie -->
+                      {% for especie in especies %}
+                        <li>
+                          <form method="get" class="dropdown-item p-0">
+                            <input type="hidden" name="especie" value="{{ especie }}">
+                            <button type="submit" class="btn w-100 text-start">Espécie: {{ especie }}</button>
+                          </form>
+                        </li>
+                      {% endfor %}
+
+                    </ul>
+                  </div>
+
+                  <!-- ORDENAR Dropdown -->
+                  <div class="dropdown">
+                    <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="bi bi-sort-numeric-down"></i> Ordenar
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <form method="get" class="dropdown-item p-0">
+                          <input type="hidden" name="ordenar" value="asc">
+                          <button type="submit" class="btn w-100 text-start">Idade Crescente</button>
+                        </form>
+                      </li>
+                      <li>
+                        <form method="get" class="dropdown-item p-0">
+                          <input type="hidden" name="ordenar" value="desc">
+                          <button type="submit" class="btn w-100 text-start">Idade Decrescente</button>
+                        </form>
+                      </li>
+                    </ul>
+                  </div>
+
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Tabela -->
-      <div class="col-12 mb-5">
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped table-hover">
-            <thead class="table-success">
-              <tr>
-                <th>CUIDADOR</th>
-                <th>TELEFONE</th>
-                <th>ENDEREÇO</th>
-                <th>ESPÉCIE</th>
-                <th>IDADE</th>
-                <th>FOTOS</th>
-                <th>OBSERVAÇÃO</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><a href="#">José João</a></td>
-                <td>+55 77 987654321</td>
-                <td>Bairro</td>
-                <td>Ipê Amarelo</td>
-                <td>4 M</td>
-                <td><a href="#">Foto</a></td>
-                <td><a href="#">Obs</a></td>
-              </tr>
-              {% for item in lista %}
-              <tr>
-                <td>{{ item.cuidador }}</td>
-                <td>{{ item.telefone }}</td>
-                <td>{{ item.endereco }}</td>
-                <td>{{ item.especie }}</td>
-                <td>{{ item.idade }}</td>
-                <td><a href="#">Foto</a></td>
-                <td><a href="#">Obs</a></td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <!-- Tabela -->
+          <div class="col-12 mb-5">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped table-hover">
+                <thead class="table-success">
+                  <tr>
+                    <th>CUIDADOR</th>
+                    <th>TELEFONE</th>
+                    <th>ENDEREÇO</th>
+                    <th>ESPÉCIE</th>
+                    <th>IDADE</th>
+                    <th>FOTOS</th>
+                    <th>OBSERVAÇÃO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><a href="#">José João</a></td>
+                    <td>+55 77 987654321</td>
+                    <td>Bairro</td>
+                    <td>Ipê Amarelo</td>
+                    <td>4 M</td>
+                    <td><a href="#">Foto</a></td>
+                    <td><a href="#">Obs</a></td>
+                  </tr>
+                  {% for item in lista %}
+                  <tr>
+                    <td>{{ item.cuidador }}</td>
+                    <td>{{ item.telefone }}</td>
+                    <td>{{ item.endereco }}</td>
+                    <td>{{ item.especie }}</td>
+                    <td>{{ item.idade }}</td>
+                    <td><a href="#">Foto</a></td>
+                    <td><a href="#">Obs</a></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        
+            
 
-          <!-- FILTRO Dropdown -->
-        <!-- Cartões com gráficos -->
-        <div class="d-flex justify-content-around flex-wrap">
-          <canvas id="graficoPizza" width="200" height="200"></canvas>
-          <canvas id="graficoLinha" width="400" height="200"></canvas>
-        </div>
+              <!-- FILTRO Dropdown -->
+            <!-- Cartões com gráficos -->
+            <div class="d-flex justify-content-around flex-wrap">
+              <canvas id="graficoPizza" width="200" height="200"></canvas>
+              <canvas id="graficoLinha" width="400" height="200"></canvas>
+            </div>
 
-      </div>
-    </div> 
+          </div>
+        </div> 
 </main>
 <script>
   const ctxPizza = document.getElementById('graficoPizza').getContext('2d');

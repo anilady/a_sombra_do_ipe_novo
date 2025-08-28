@@ -7,8 +7,10 @@
 {% include 'ipe_roxo/partials/navbar_colaborador.html' %}
 
 <div class="container my-5">
-  <h2 class="mb-4 text-center">Formulários Enviados</h2>
-
+  <h2 class="card-title text-center mb-4 text-success fw-bold">
+    🌱 Formulários Enviados
+  </h2>
+  <hr>
   {% if messages %}
     <div class="mb-3">
       {% for message in messages %}
@@ -33,10 +35,10 @@
           {% for f in formularios %}
             <tr>
               <td>
-                <a href="#"      style="color: inherit; text-decoration: none; font-weight: bold;">
+                <a href="{% url 'detalhe_formulario' f.id %}"      style="color: inherit; text-decoration: none; font-weight: bold;">
                   {{ f.numero_registro }}
                 </a>
-                {% comment %} {% url 'detalhe_formulario' f.id %} {% endcomment %}
+                
               </td>
               <td>{{ f.especie }}</td>
               <td>{{ f.bairro }}</td>
@@ -58,7 +60,14 @@
           {% endfor %}
         </tbody>
       </table>
+      <!-- Botões -->
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'home_colaborador' %}" class="btn btn-outline-danger px-4">
+          ❌ Voltar
+        </a>
+      </div>
     </div>
+    
   {% else %}
     <div class="alert alert-info text-center">
       Nenhum formulário enviado ainda.

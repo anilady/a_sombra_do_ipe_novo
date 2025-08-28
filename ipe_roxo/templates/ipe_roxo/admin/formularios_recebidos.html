@@ -4,189 +4,230 @@
 {% block title %}Formulários Recebidos{% endblock title %}
 
 {% block content %}
+{% include 'ipe_roxo/partials/navbar_admin.html' %}
 
-{% include 'ipe_roxo/partials/navbar_colaborador.html' %}
 <div class="container my-5">
-  <h2 class="mb-4 text-center">Formulários Recebidos</h2>
+    <h2 class="mb-4 text-center">Formulários Recebidos</h2>
 
-  {% if messages %}
+    {% if messages %}
     <div class="mb-3">
-      {% for message in messages %}
+        {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-      {% endfor %}
+        {% endfor %}
     </div>
-  {% endif %}
+    {% endif %}
 
-  {% if formularios %}
+    {% if formularios %}
     <div class="table-responsive">
-      <table class="table table-striped table-bordered">
-        <thead class="table-success">
-          <tr>
-            <th>Nº Registro</th>
-            <th>Colaborador</th>
-            <th>Bairro</th>
-            <th>Data de Envio</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for f in formularios %}
-            <tr>
-              <td>
-                {% if f.numero_registro %}
-                  <a href="#" class="text-decoration-none fw-bold link-dark">
-                    {{ f.numero_registro }}
-                  </a>
-                {% else %}
-                  <span class="text-muted">Sem registro</span>
-                {% endif %}
-              </td>
-
-              <td>{{ f.colaborador.get_full_name|default:f.colaborador.username }}</td>
-              <td>{{ f.bairro }}</td>
-              <td>{{ f.horario_cadastro|date:"d/m/Y H:i" }}</td>
-              
-              <td>
-                <span class="badge rounded-pill 
-                  {% if f.status == 'PENDENTE' %}bg-primary
-                  {% elif f.status == 'APROVADO' %}bg-success
-                  {% elif f.status == 'CORRECAO' %}bg-warning text-dark
-                  {% endif %}">
-                  {% if f.status == 'PENDENTE' %}Pendente
-                  {% elif f.status == 'APROVADO' %}Aprovado
-                  {% elif f.status == 'CORRECAO' %}Correção
-                  {% endif %}
-                </span>
-              </td>
-              
-              <td class="d-flex gap-2">
-                <!-- Botão Aprovar -->
-                <button class="btn btn-sm btn-success btn-aprovar" 
-                        data-form-id="{{ f.id }}">
-                  <i class="fas fa-check"></i> Aprovar
-                </button>
-                
-                <!-- Botão Corrigir -->
-                <button class="btn btn-sm btn-warning btn-corrigir" 
-                        data-form-id="{{ f.id }}">
-                  <i class="fas fa-edit"></i> Corrigir
-                </button>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        <table class="table table-striped table-bordered">
+            <thead class="table-success">
+                <tr>
+                    <th>Nº Registro</th>
+                    <th>Colaborador</th>
+                    <th>Bairro</th>
+                    <th>Data de Envio</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in formularios %}
+                <tr id="formulario-{{ f.id }}">
+                    <td>
+                        {% if f.numero_registro %}
+                        <a href="#" class="text-decoration-none fw-bold link-dark">
+                            {{ f.numero_registro }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Sem registro</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ f.colaborador.get_full_name|default:f.colaborador.username }}</td>
+                    <td>{{ f.bairro }}</td>
+                    <td>{{ f.horario_cadastro|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <span class="badge rounded-pill
+                            {% if f.status == 'PENDENTE' %}bg-primary
+                            {% elif f.status == 'APROVADO' %}bg-success
+                            {% elif f.status == 'CORRECAO' %}bg-warning text-dark
+                            {% endif %}">
+                            {% if f.status == 'PENDENTE' %}Pendente
+                            {% elif f.status == 'APROVADO' %}Aprovado
+                            {% elif f.status == 'CORRECAO' %}Correção
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="d-flex gap-2">
+                      <!-- Botão Aprovar -->
+                      <button class="btn btn-sm btn-success btn-aprovar" data-form-id="{{ f.id }}" aria-label="Aprovar formulário {{ f.numero_registro|default:f.id }}">
+                          <i class="fas fa-check"></i> Aprovar
+                      </button>
+                      <!-- Botão Corrigir -->
+                      <button class="btn btn-sm btn-warning btn-corrigir" data-form-id="{{ f.id }}" aria-label="Solicitar correção do formulário {{ f.numero_registro|default:f.id }}">
+                          <i class="fas fa-edit"></i> Corrigir
+                      </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-  {% else %}
+    {% else %}
     <div class="alert alert-info text-center">
-      <i class="fas fa-info-circle me-2"></i>Nenhum formulário recebido.
+        <i class="fas fa-info-circle me-2"></i>Nenhum formulário recebido.
     </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- Modal de Correção -->
-  <div class="modal fade" id="modalCorrecao" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-warning text-dark">
-          <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Solicitar Correção</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form method="post" id="formCorrecao"
-              data-url-pattern="{% url 'formulario-corrigir' 0 %}">
-          {% csrf_token %}
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Motivo da correção:</label>
-              <textarea name="motivo" class="form-control" rows="4" required
-                        placeholder="Descreva o que precisa ser corrigido..."></textarea>
+    <!-- Modal de Correção -->
+    <div class="modal fade" id="modalCorrecao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Solicitar Correção
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formCorrecao">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Motivo da correção:</label>
+                            <textarea name="motivo" class="form-control" rows="4" required 
+                                      placeholder="Descreva o que precisa ser corrigido..."></textarea>
+                            <div class="form-text">Mínimo 10 caracteres</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-paper-plane me-1"></i>Enviar Correção
+                        </button>
+                    </div>
+                </form>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              <i class="fas fa-times me-1"></i>Cancelar
-            </button>
-            <button type="submit" class="btn btn-warning">
-              <i class="fas fa-paper-plane me-1"></i>Enviar Correção
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
 
 {% block javascript %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Configuração do modal
-  const modal = new bootstrap.Modal('#modalCorrecao');
-  const formCorrecao = document.getElementById('formCorrecao');
-  const aprovarUrlPattern = "{% url 'formulario-aprovar' 0 %}";
-  const corrigirUrlPattern = formCorrecao.dataset.urlPattern;
-
-  // Botões Aprovar
-  document.querySelectorAll('.btn-aprovar').forEach(btn => {
-    btn.addEventListener('click', async function() {
-      const formId = this.dataset.formId;
-      const url = aprovarUrlPattern.replace('0', formId);
-      
-      if (confirm('Deseja aprovar este formulário?')) {
-        try {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'X-CSRFToken': '{{ csrf_token }}',
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            location.reload();
-          } else {
-            alert('Erro ao aprovar formulário');
-          }
-        } catch (error) {
-          console.error('Erro:', error);
-          alert('Erro na comunicação com o servidor');
-        }
-      }
-    });
-  });
-
-  // Botões Corrigir
-  document.querySelectorAll('.btn-corrigir').forEach(btn => {
-    btn.addEventListener('click', function() {
-      formCorrecao.action = corrigirUrlPattern.replace('0', this.dataset.formId);
-      modal.show();
-    });
-  });
-
-  // Envio do formulário de correção
-  formCorrecao.addEventListener('submit', async function(e) {
-    e.preventDefault();
+    // Configuração do modal
+    const modal = new bootstrap.Modal('#modalCorrecao');
+    const formCorrecao = document.getElementById('formCorrecao');
     
-    try {
-      const response = await fetch(this.action, {
-        method: 'POST',
-        body: new FormData(this)
-      });
-      
-      if (response.ok) {
-        location.reload();
-      } else {
-        alert('Erro ao enviar correção');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro na comunicação com o servidor');
-    }
-  });
+    // URLs CORRETAS
+    const aprovarUrlPattern = "{% url 'formulario-aprovar' 0 %}";
+    const corrigirUrlPattern = "{% url 'formulario-corrigir' 0 %}";
+    
+    let currentFormId = null;
+
+    // Botões Aprovar
+    document.querySelectorAll('.btn-aprovar').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const formId = this.dataset.formId;
+            const url = aprovarUrlPattern.replace('0', formId);
+
+            if (confirm('Deseja aprovar este formulário?')) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        // Remove a linha da tabela
+                        document.getElementById(`formulario-${formId}`).remove();
+                        
+                        // Verifica se ainda há formulários
+                        if (document.querySelectorAll('tbody tr').length === 0) {
+                            location.reload();
+                        }
+                    } else {
+                        alert('Erro: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro na comunicação com o servidor');
+                }
+            }
+        });
+    });
+
+    // Botões Corrigir
+    document.querySelectorAll('.btn-corrigir').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentFormId = this.dataset.formId;
+            modal.show();
+        });
+    });
+
+    // Envio do formulário de correção
+    formCorrecao.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const motivo = this.motivo.value.trim();
+        if (motivo.length < 10) {
+            alert('O motivo deve ter pelo menos 10 caracteres.');
+            return;
+        }
+        
+        const url = corrigirUrlPattern.replace('0', currentFormId);
+        
+        try {
+            // Usando FormData em vez de JSON
+            const formData = new FormData();
+            formData.append('motivo', motivo);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                alert(data.message);
+                modal.hide();
+                // Remove a linha da tabela
+                document.getElementById(`formulario-${currentFormId}`).remove();
+                
+                // Verifica se ainda há formulários
+                if (document.querySelectorAll('tbody tr').length === 0) {
+                    location.reload();
+                }
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro na comunicação com o servidor');
+        }
+    });
+
+    // Limpa o modal quando fechar
+    modal._element.addEventListener('hidden.bs.modal', function () {
+        formCorrecao.reset();
+        currentFormId = null;
+    });
 });
 </script>
 {% endblock %}
-
 {% endblock %}
+
