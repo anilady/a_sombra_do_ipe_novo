@@ -42,11 +42,13 @@ class PlantaCuidador(models.Model):
     foto = models.ImageField(upload_to='fotos_plantas/') 
     data_envio = models.DateTimeField(auto_now_add=True) 
     observacao_admin = models.TextField(blank=True) 
-    def save(self, *args, **kwargs): 
-        if not self.pk and not self.numero_registro: # Só para novos registros 
-            self.numero_registro = timezone.now().strftime("IP%Y%m") + str(uuid.uuid4().hex[:6]).upper() 
-            super().save(*args, **kwargs) 
-            def __str__(self): return f"{self.numero_registro} - {self.nome}"
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.numero_registro:  # Só para novos registros
+            self.numero_registro = timezone.now().strftime("IP%Y%m") + str(uuid.uuid4().hex[:6]).upper()
+        super().save(*args, **kwargs)  # Agora sempre salva
+
+    def __str__(self):
+        return f"{self.numero_registro} - {self.nome}"
 
 
 #################################3##

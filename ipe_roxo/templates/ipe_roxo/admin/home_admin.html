@@ -1,176 +1,302 @@
-{% extends 'ipe_roxo/partials/base.html' %}
+{% extends "ipe_roxo/partials/base.html" %}
 {% load static %}
 
-{% block title %}Painel do Administrador{% endblock title %}
+{% block title %}Painel Administrativo{% endblock title %}
+
 
 {% block content %}
 {% include 'ipe_roxo/partials/navbar_admin.html' %}
+    <main class="flex-grow-1 d-flex flex-column py-5 px-5">
+      <div class="container-fluid">
 
-<!-- CONTEÚDO PRINCIPAL -->
-<main class="flex-grow-1 d-flex flex-column py-5 px-5">
-    <div class="container-fluid">
+            <!-- Barra de Pesquisa e Filtros -->
+            <div class="row mb-4">
+                <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-      <!-- Pesquisa e Filtros -->
-  {% comment %} <div class="col-12 mb-4">
-    <div class="container-pesquisa">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <!-- Título Alinhado à Esquerda -->
+                    <h1 class="fw-bold ">Painel Administrativo</h1>
 
-        <!-- Campo de pesquisa -->
-        <form method="get" class="input-group w-100 w-md-50">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar cuidador, espécie, bairro..." value="{{ request.GET.pesquisa }}">
-          <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
-          {% if request.GET.pesquisa %}
-            <a href="{% url 'home_admin' %}" class="btn btn-outline-danger"><i class="bi bi-x"></i></a>
-          {% endif %}
-        </form>
+                    <!-- ÁREA DE FILTRO / ORDEM -->
+                  <form method="get" class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 w-100">
 
-        <!-- Botões de filtro e ordenação -->
-        <div class="d-flex gap-2">
-          <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  <i class="bi bi-funnel"></i> Filtrar
-                </button>
-                <ul class="dropdown-menu">
+                    <!-- CAMPO DE PESQUISA -->
+                    <div class="input-group w-100 w-md-50">
+                      <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar por Nº Registro, Nome, Espécie ou Bairro" value="{{ request.GET.pesquisa }}">
+                      <button class="btn btn-outline-success" type="submit">
+                        <i class="bi bi-search"></i>
+                      </button>
+                    </div>
 
-                  <!-- Cuidador -->
-                  {% for cuidador in cuidadores %}
-                    <li>
-                      <form method="get" class="dropdown-item p-0">
-                        <input type="hidden" name="cuidador" value="{{ cuidador }}">
-                        <button type="submit" class="btn w-100 text-start">Cuidador: {{ cuidador }}</button>
-                      </form>
-                    </li>
-                  {% endfor %}
+                    <!-- FILTROS: ESPÉCIE E BAIRRO -->
+                    <div class="d-flex gap-2 flex-wrap">
 
-                  <!-- Bairro -->
-                  {% for bairro in bairros %}
-                    <li>
-                      <form method="get" class="dropdown-item p-0">
-                        <input type="hidden" name="endereco" value="{{ bairro }}">
-                        <button type="submit" class="btn w-100 text-start">Bairro: {{ bairro }}</button>
-                      </form>
-                    </li>
-                  {% endfor %}
 
-                  <!-- Espécie -->
-                  {% for especie in especies %}
-                    <li>
-                      <form method="get" class="dropdown-item p-0">
-                        <input type="hidden" name="especie" value="{{ especie }}">
-                        <button type="submit" class="btn w-100 text-start">Espécie: {{ especie }}</button>
-                      </form>
-                    </li>
-                  {% endfor %}
+                      
 
-                </ul>
-              </div>
+                      <!-- FILTRO POR STATUS -->
+                      <div class="dropdown">
+                        <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                          <i class="bi bi-funnel"></i> Filtrar Status
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <form method="get" class="dropdown-item p-0">
+                              <input type="hidden" name="status" value="">
+                              {% if request.GET.pesquisa %}
+                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                              {% endif %}
+                              {% if request.GET.especie %}
+                                <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                              {% endif %}
+                              <button type="submit" class="btn w-100 text-start">Todos</button>
+                            </form>
+                          </li>
+                          <li>
+                            <form method="get" class="dropdown-item p-0">
+                              <input type="hidden" name="status" value="ativos">
+                              {% if request.GET.pesquisa %}
+                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                              {% endif %}
+                              {% if request.GET.especie %}
+                                <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                              {% endif %}
+                              <button type="submit" class="btn w-100 text-start">Ativos</button>
+                            </form>
+                          </li>
+                          <li>
+                            <form method="get" class="dropdown-item p-0">
+                              <input type="hidden" name="status" value="inativos">
+                              {% if request.GET.pesquisa %}
+                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                              {% endif %}
+                              {% if request.GET.especie %}
+                                <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                              {% endif %}
+                              <button type="submit" class="btn w-100 text-start">Inativos</button>
+                            </form>
+                          </li>
+                        </ul>
+                      </div>
 
-              <!-- ORDENAR Dropdown -->
-              <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  <i class="bi bi-sort-numeric-down"></i> Ordenar
-                </button>
-                <ul class="dropdown-menu">
-                  <li>
-                    <form method="get" class="dropdown-item p-0">
-                      <input type="hidden" name="ordenar" value="asc">
-                      <button type="submit" class="btn w-100 text-start">Idade Crescente</button>
-                    </form>
-                  </li>
-                  <li>
-                    <form method="get" class="dropdown-item p-0">
-                      <input type="hidden" name="ordenar" value="desc">
-                      <button type="submit" class="btn w-100 text-start">Idade Decrescente</button>
-                    </form>
-                  </li>
-                </ul>
-              </div>
+                      <!-- ORDENAR -->
+                      <div class="dropdown">
+                        <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                          <i class="bi bi-sort-alpha-down"></i> Ordenar
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <form method="get" class="dropdown-item p-0">
+                              <input type="hidden" name="ordem" value="mais_recente">
+                              {% if request.GET.pesquisa %}
+                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                              {% endif %}
+                              {% if request.GET.status %}
+                                <input type="hidden" name="status" value="{{ request.GET.status }}">
+                              {% endif %}
+                              <button type="submit" class="btn w-100 text-start">Mais Recente</button>
+                            </form>
+                          </li>
+                          <li>
+                            <form method="get" class="dropdown-item p-0">
+                              <input type="hidden" name="ordem" value="menos_recente">
+                              {% if request.GET.pesquisa %}
+                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                              {% endif %}
+                              {% if request.GET.status %}
+                                <input type="hidden" name="status" value="{{ request.GET.status }}">
+                              {% endif %}
+                              <button type="submit" class="btn w-100 text-start">Menos Recente</button>
+                            </form>
+                          </li>
+                        </ul>
+                      </div>
 
+                      <!-- BOTÃO LIMPAR FILTROS -->
+                      <a href="{% url 'home_admin' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Limpar Filtros
+                      </a>
+
+                    </div>
+                  </form>
+
+            <!-- Tabela de Formulários -->
+            <div class="col-12 mb-5">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Nº Registro</th>
+                                <th>Nome</th>
+                                <th>Espécie</th>
+                                <th>Data Plantio</th>
+                                <th>Data Envio</th>
+                                <th>Bairro</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for formulario in formularios %}
+                                <tr>
+                                    <td>{{ formulario.numero_registro }}</td>
+                                    <td>{{ formulario.nome }}</td>
+                                    <td>{{ formulario.especie }}</td>
+                                    <td>{{ formulario.data|date:"d/m/Y" }}</td>
+                                    <td>{{ formulario.data_envio|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ formulario.bairro }}</td>
+                                    <td>
+                                        <span class="badge {% if formulario.ativo %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if formulario.ativo %}Ativa{% else %}Inativa{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8">Nenhum formulário aprovado encontrado.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Tabela -->
-      <div class="col-12 mb-5">
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped table-hover">
-            <thead class="table-success">
-              <tr>
-                <th>CUIDADOR</th>
-                <th>TELEFONE</th>
-                <th>ENDEREÇO</th>
-                <th>ESPÉCIE</th>
-                <th>IDADE</th>
-                <th>FOTOS</th>
-                <th>OBSERVAÇÃO</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><a href="#">José João</a></td>
-                <td>+55 77 987654321</td>
-                <td>Bairro</td>
-                <td>Ipê Amarelo</td>
-                <td>4 M</td>
-                <td><a href="#">Foto</a></td>
-                <td><a href="#">Obs</a></td>
-              </tr>
-              {% for item in lista %}
-              <tr>
-                <td>{{ item.cuidador }}</td>
-                <td>{{ item.telefone }}</td>
-                <td>{{ item.endereco }}</td>
-                <td>{{ item.especie }}</td>
-                <td>{{ item.idade }}</td>
-                <td><a href="#">Foto</a></td>
-                <td><a href="#">Obs</a></td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title  fw-bold">Total de Árvores Plantadas</h5>
+                            <p class="stat-number display-4 text-success">{{ total_arvores }}</p>
+                        </div>
+                    </div>
+                </div>
 
-        
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold ">Árvores Ativas</h5>
+                            <p class="stat-number display-4 text-primary">{{ total_arvores_ativas }}</p>
+                        </div>
+                    </div>
+                </div>
 
-          <!-- FILTRO Dropdown -->
-        <!-- Cartões com gráficos -->
-        <div class="d-flex justify-content-around flex-wrap">
-          <canvas id="graficoPizza" width="200" height="200"></canvas>
-          <canvas id="graficoLinha" width="400" height="200"></canvas>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Taxa de Sobrevivência</h5>
+                            <p class="stat-number display-4 text-info">
+                                {% if total_arvores > 0 %}
+                                    {{ taxa_sobrevivencia|floatformat:1 }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                            <!-- Gráfico de Plantios -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="fw-bold mb-0 ">📊 Plantios por Mês</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="plantiosChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+              </div>
         </div>
 
-      </div>
-    </div>  {% endcomment %}
-</main>
-{% comment %} <script>
-  const ctxPizza = document.getElementById('graficoPizza').getContext('2d');
-  const pizza = new Chart(ctxPizza, {
-    type: 'pie',
-    data: {
-      labels: ['Vivas', 'Mortas', 'Sem Informação'],
-      datasets: [{
-        data: [{{ grafico_pizza.vivas }}, {{ grafico_pizza.mortas }}, {{ grafico_pizza.sem_info }}],
-        backgroundColor: ['#198754', '#dc3545', '#adb5bd']
-      }]
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dadosMensais = JSON.parse('{{ dados_mensais|escapejs }}');
+            console.log('Dados mensais:', dadosMensais);
+
+            if (dadosMensais && dadosMensais.length > 0) {
+                const meses = dadosMensais.map(item => {
+                    if (item.mes) {
+                        const date = new Date(item.mes);
+                        return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                    }
+                    return 'Data inválida';
+                });
+
+                const quantidades = dadosMensais.map(item => item.quantidade || 0);
+
+                const ctx = document.getElementById('plantiosChart').getContext('2d');
+
+                if (window.plantiosChartInstance) {
+                    window.plantiosChartInstance.destroy();
+                }
+
+                window.plantiosChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: meses,
+                        datasets: [{
+                            label: 'Plantios por Mês',
+                            data: quantidades,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade de Plantios'
+                                },
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            },
+                            x: {
+                              title: {
+                              display: true,
+                              text: 'Mês'
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        // Se não houver dados, mostrar mensagem
+        document.getElementById('plantiosChart').innerHTML = 
+            '<div class="text-center p-4"><p>Nenhum dado disponível para o gráfico</p></div>';
     }
-  });
+});
+</script>
 
-  const ctxLinha = document.getElementById('graficoLinha').getContext('2d');
-  const linha = new Chart(ctxLinha, {
-    type: 'line',
-    data: {
-      labels: {{ grafico_linha.anos|safe }},
-      datasets: [{
-        label: 'Árvores Plantadas',
-        data: {{ grafico_linha.totais|safe }},
-        borderColor: '#198754',
-        backgroundColor: 'rgba(25, 135, 84, 0.2)',
-        tension: 0.4
-      }]
-    }
-  });
-</script> {% endcomment %}
+<style>
+.stat-number {
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-title {
+    color: rgba(255, 193, 7);
+    font-weight: 600;
+}
+
+
+#plantiosChart {
+    max-height: 400px;
+}
+
+
+</style>
 {% endblock %}

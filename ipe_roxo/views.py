@@ -6,6 +6,7 @@ from .forms import ColaboradorForm
 from .forms import ColaboradorEditForm
 from django.utils import timezone
 
+import json
 
 from .forms import PlantaCuidadorForm
 from django.http import JsonResponse
@@ -15,11 +16,12 @@ from .models import PlantaCuidador
 from django.views.generic import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 
 from django.db.models import Q
 from django.views.decorators.http import require_POST
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 ##############################################
 
@@ -30,8 +32,10 @@ def csrf_failure(request, reason=""):
     }
     return render(request, 'ipe_roxo/index/csrf_failure.html', context, status=403)
 
+
 def home(request):
     return render(request, 'ipe_roxo/index/home.html')
+
 
 def login_admin(request):
     if request.method == 'POST':
@@ -85,15 +89,91 @@ def home_colaborador(request):
     return render(request, 'ipe_roxo/colaborador/home_colaborador.html')
 
 def home_admin(request):
+    if not request.user.is_authenticated or request.user.tipo != 'ADMIN':
+        return redirect('login_admin')
+    
+    # Buscar apenas formulários APROVADOS
+    formularios_aprovados = PlantaCuidador.objects.filter(status='APROVADO')
+    
+    # Calcular totais
+    total_arvores = formularios_aprovados.count()
+    total_arvores_ativas = formularios_aprovados.filter(ativo=True).count()
 
-    return render(request, 'ipe_roxo/admin/home_admin.html')
+    # Calcular taxa de sobrevivência
+    taxa_sobrevivencia = 0
+    if total_arvores > 0:
+        taxa_sobrevivencia = (total_arvores_ativas / total_arvores) * 100
+    
+    # Dados para gráfico mensal
+    dados_mensais = obter_dados_mensais_plantios()
+    dados_mensais_json = json.dumps(dados_mensais, default=str)  # transforma datas em string ISO
+
+
+    # Pesquisar
+    pesquisa = request.GET.get('pesquisa')
+    if pesquisa:
+        formularios_aprovados = formularios_aprovados.filter(
+            Q(numero_registro__icontains=pesquisa) |   # Pesquisa por Nº Registro
+            Q(nome__icontains=pesquisa) |               # Pesquisa por Nome
+            Q(especie__icontains=pesquisa) |            # Pesquisa por Espécie
+            Q(bairro__icontains=pesquisa)               # Pesquisa por Bairro
+        )
+
+
+    # Filtro por Status
+    status = request.GET.get('status')
+    if status == 'ativos':
+        formularios_aprovados = formularios_aprovados.filter(ativo=True)
+    elif status == 'inativos':
+        formularios_aprovados = formularios_aprovados.filter(ativo=False)
+
+    # Ordenação
+    ordem = request.GET.get('ordem')
+    if ordem == 'mais_recente':
+        formularios_aprovados = formularios_aprovados.order_by('-data_envio')  # Mais recente
+    elif ordem == 'menos_recente':
+        formularios_aprovados = formularios_aprovados.order_by('data_envio')   # Menos recente
+
+    # Contexto
+    context = {
+        'formularios': formularios_aprovados,
+        'total_arvores': total_arvores,
+        'total_arvores_ativas': total_arvores_ativas,
+        'taxa_sobrevivencia': taxa_sobrevivencia,
+        'dados_mensais': dados_mensais,
+        'pesquisa': pesquisa,
+        'status_filter': status,
+        'ordem': ordem,
+        'dados_mensais': dados_mensais_json,
+    }
+
+    return render(request, 'ipe_roxo/admin/home_admin.html', context)
+
+    
+
+def obter_dados_mensais_plantios():
+    # Plantios por mês (apenas aprovados)
+    dados = (PlantaCuidador.objects
+             .filter(status='APROVADO', data__isnull=False)
+             .annotate(mes=TruncMonth('data'))
+             .values('mes')
+             .annotate(quantidade=Count('id'))
+             .order_by('mes'))
+    
+    return list(dados)
+
 
 
 def ajuda(request):
     return render(request, 'ipe_roxo/admin/ajuda.html')
 
 
-
+def logout_view(request):
+    # Realiza o logout
+    logout(request)
+    
+    # Redireciona o usuário para a página de login ou qualquer página desejada
+    return redirect('login')
 
 
 
@@ -266,16 +346,6 @@ class BaseFormularioView(LoginRequiredMixin, StaffRequiredMixin, View):
     def get_formulario(self):
         return get_object_or_404(self.model, pk=self.kwargs['pk'])
 
-# class FormularioAprovarView(BaseFormularioView):
-#     """View para aprovar formulários - SOME da lista"""
-    
-#     def post(self, request, *args, **kwargs):
-#         formulario = get_object_or_404(PlantaCuidador, pk=self.kwargs['pk'])
-#         formulario.status = 'APROVADO'
-#         print(">>> ALTERANDO STATUS PARA:", formulario.status)
-#         formulario.save()
-#         print(">>> SALVO NO BANCO")
-#         return JsonResponse({'success': True})
 
 class FormularioAprovarView(BaseFormularioView):
     def post(self, request, *args, **kwargs):
@@ -323,7 +393,6 @@ class FormularioCorrigirView(BaseFormularioView):
             formulario.motivo_correcao = motivo
             formulario.admin_responsavel = request.user
             formulario.save()
-            print(">>> CORRIGINDO FORMULÁRIO", formulario.id, motivo)
 
             
             return JsonResponse({
@@ -336,3 +405,26 @@ class FormularioCorrigirView(BaseFormularioView):
                 'status': 'error', 
                 'message': f'Erro ao solicitar correção: {str(e)}'
             })
+        
+#########################################################
+
+# def graficos(request):
+#     # Plantios por mês (com base no campo data_envio)
+#     plantios_por_mes = (
+#         PlantaCuidador.objects
+#         .annotate(mes=TruncMonth('data_envio'))
+#         .values('mes')
+#         .annotate(total=Count('id'))
+#         .order_by('mes')
+#     )
+
+#     # Árvores ativas
+#     arvores_ativas = PlantaCuidador.objects.filter(ativo=True).count()
+#     arvores_inativas = PlantaCuidador.objects.filter(ativo=False).count()
+
+#     context = {
+#         'plantios_por_mes': list(plantios_por_mes),
+#         'arvores_ativas': arvores_ativas,
+#         'arvores_inativas': arvores_inativas,
+#     }
+#     return render(request, 'ipe_roxo/admin/home_admin.html', context)

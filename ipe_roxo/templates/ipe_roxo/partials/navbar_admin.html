@@ -13,18 +13,20 @@
     <div class="collapse navbar-collapse justify-content-between" id="navbarContent">
       <ul class="navbar-nav gap-3">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'colaboradores' %}">Colaboradores</a>
+          <a class="nav-link fw-bold " href="{% url 'colaboradores' %}">Colaboradores</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'formularios-recebidos' %}">Formulários Recebidos</a>
+          <a class="nav-link fw-bold" href="{% url 'formularios-recebidos' %}">Formulários Recebidos</a>
         </li>
       </ul>
 
       <ul class="navbar-nav">
-        <h6>Olá, {{ request.user.first_name|default:request.user.username }}!</h6>
+        <li class="nav-item d-flex align-items-center">
+          <span class="text-white fs-5 me-3">Olá, <strong>{{ request.user.first_name|default:request.user.username }}</strong></span>
+        </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle fs-3"></i>
+            <i class="bi bi-person-circle fs-1"></i>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{% url 'ajuda' %}"><i class="bi bi-question-circle-fill text-primary"></i> Ajuda</a></li>

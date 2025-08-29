@@ -1,5 +1,50 @@
-<footer class="footer bg-success text-white text-center py-3 mt-5">
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<footer class="footer bg-dark text-white py-4 mt-5">
   <div class="container">
-    &copy; 2025 À Sombra do Ipê. Todos os direitos reservados.
+    <div class="row">
+      <!-- Coluna 1: Informações do Projeto -->
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">À Sombra do Ipê</h5>
+        <p><i class="fab fa-python text-white" style="font-size: 15px;">
+        </i> Projeto desenvolvido por alunos do IF Baiano Lapa em parceria com o Colégio São Vicente de Paulo.</p>
+        <p style="color: white; font-size: 15px;">&copy; 2025 À Sombra do Ipê. Todos os direitos reservados.</p>
+        
+        <p >Licenciado para Colégio São Vicente de Paulo</p>
+      </div>
+      
+      <!-- Coluna 2: Logos -->
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">Instituições Parceiras</h5>
+        <div class="d-flex justify-content-center gap-3">
+          <img src="{% static 'img/iflogo-.png' %}" alt="Logo IF Baiano Lapa" width="70" class="img-fluid">
+          <img src="{% static 'img/Sãovicente.png' %}" alt="Logo Colégio São Vicente de Paulo" width="70" class="img-fluid">
+        </div>
+      </div>
+      
+      <!-- Coluna 3: Links úteis -->
+      <div class="col-md-4 mb-3">
+        <h5 class="fw-bold">Links Úteis</h5>
+        <ul class="list-unstyled">
+          <li><a href="https://www.ifbaiano.edu.br/unidades/lapa/" target="_blank" class="text-white text-decoration-none">IF Baiano</a></li>
+          <li><a href="https://www.svpa.com.br/" target="_blank" class="text-white text-decoration-none">Colégio São Vicente de Paulo</a></li>
+          <li><a href="https://www.asombradopie.com" target="_blank" class="text-white text-decoration-none">Site do Projeto</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-4">
+      <!-- Ícones de redes sociais -->
+      <a href="https://www.instagram.com/asombradoipe?igsh=MWcxaTl3aWhtZjhtbg==" target="_blank" class="text-white fs-4">
+        <i class="bi bi-instagram"></i>
+      </a>
+      <a href="https://www.facebook.com" target="_blank" class="text-white fs-4">
+        <i class="bi bi-facebook"></i>
+      </a>
+      <a href="https://www.twitter.com" target="_blank" class="text-white fs-4">
+        <i class="bi bi-twitter"></i>
+      </a>
+    </div>
   </div>
 </footer>

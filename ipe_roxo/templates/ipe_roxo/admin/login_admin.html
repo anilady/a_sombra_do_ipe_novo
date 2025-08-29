@@ -5,57 +5,59 @@
 {% block title %}À Sombra do Ipê{% endblock %}
 
 {% block content %}
-  {% include 'ipe_roxo/partials/navbar_index.html' %}
+{% include 'ipe_roxo/partials/navbar_index.html' %}
 
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card shadow">
-          <div class="card-body">
-            <h2 class="card-title text-center fw-bold mb-4">Bem-vindo Administrador</h2>
+  <main class="flex-grow-1 d-flex flex-column py-5 px-5">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow">
+            <div class="card-body">
+              <h2 class="card-title text-center fw-bold mb-4">Bem-vindo Administrador</h2>
 
-            {% if messages %}
-              <div class="container mb-3">
-                {% for message in messages %}
-                  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-              </div>
-            {% endif %}
-
-            <form method="POST" class="p-2">
-              {% csrf_token %}
-
-              <!-- Campo de email -->
-              <div class="mb-3">
-                <label for="email" class="form-label">E-mail</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-at"></i></span>
-                  <input type="email" id="email" class="form-control" name="email" placeholder="Digite seu e-mail" required>
+              {% if messages %}
+                <div class="container mb-3">
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                  {% endfor %}
                 </div>
-              </div>
+              {% endif %}
 
-              <!-- Campo de senha -->
-              <div class="mb-3">
-                <label for="senha" class="form-label">Senha</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                  <input type="password" id="senha" class="form-control" name="senha" placeholder="Digite sua senha" required>
+              <form method="POST" class="p-2">
+                {% csrf_token %}
+
+                <!-- Campo de email -->
+                <div class="mb-3">
+                  <label for="email" class="form-label">E-mail</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-at"></i></span>
+                    <input type="email" id="email" class="form-control" name="email" placeholder="Digite seu e-mail" required>
+                  </div>
                 </div>
-                
-              </div>
-              <!-- Link de esqueceu a senha -->
-              <div class="d-flex justify-content-end mb-3">
-                <small><a href="#" class="text-decoration-none">Esqueceu a senha? <strong>Clique aqui</strong></a></small>
-              </div>
 
-              <!-- Botão de login -->
-              <div class="d-grid">
-                <button type="submit" class="btn btn-success">Acessar</button>
-              </div>
-            </form>
+                <!-- Campo de senha -->
+                <div class="mb-3">
+                  <label for="senha" class="form-label">Senha</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" id="senha" class="form-control" name="senha" placeholder="Digite sua senha" required>
+                  </div>
+                  
+                </div>
+                <!-- Link de esqueceu a senha -->
+                <div class="d-flex justify-content-end mb-3">
+                  <small><a href="#" class="text-decoration-none">Esqueceu a senha? <strong>Clique aqui</strong></a></small>
+                </div>
+
+                <!-- Botão de login -->
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-success">Acessar</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 {% endblock %}
