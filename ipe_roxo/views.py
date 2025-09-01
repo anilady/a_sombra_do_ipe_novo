@@ -130,9 +130,9 @@ def home_admin(request):
     # Ordenação
     ordem = request.GET.get('ordem')
     if ordem == 'mais_recente':
-        formularios_aprovados = formularios_aprovados.order_by('-data_envio')  # Mais recente
+        formularios_aprovados = formularios_aprovados.order_by('-data_envio') 
     elif ordem == 'menos_recente':
-        formularios_aprovados = formularios_aprovados.order_by('data_envio')   # Menos recente
+        formularios_aprovados = formularios_aprovados.order_by('data_envio')   
 
     # Contexto
     context = {
@@ -303,20 +303,77 @@ def cadastrar_planta_cuidador(request):
         'hoje': timezone.now().strftime('%Y-%m-%d')  # Para limitar a data no HTML
     })
 
+def editar_planta(request, pk):
+    planta = get_object_or_404(PlantaCuidador, pk=pk)
+
+    if request.method == 'POST':
+        form = PlantaCuidadorForm(request.POST, request.FILES, instance=planta)
+        if form.is_valid():
+            planta = form.save(commit=False)   # ainda não salva no banco
+            planta.status = "PENDENTE"         # força o status para pendente
+            planta.save()                      # agora sim salva
+            messages.success(request, 'Planta atualizada com sucesso e enviada para nova avaliação!')
+            return redirect('formularios_enviados')
+    else:
+        form = PlantaCuidadorForm(instance=planta)
+
+    return render(request, 'ipe_roxo/colaborador/editar_form.html', {'form': form})
 
 
 @login_required
 def formularios_enviados(request):
     formularios = PlantaCuidador.objects.filter(colaborador=request.user).order_by('-data_envio')
-    return render(request, 'ipe_roxo/colaborador/formularios_enviados.html', {'formularios': formularios})
+
+      # Pesquisar
+    pesquisa = request.GET.get('pesquisa')
+    if pesquisa:
+        formularios= formularios.filter(
+            Q(numero_registro__icontains=pesquisa) |   # Pesquisa por Nº Registro
+            Q(nome__icontains=pesquisa) |               # Pesquisa por Nome
+            Q(especie__icontains=pesquisa) |            # Pesquisa por Espécie
+            Q(bairro__icontains=pesquisa)               # Pesquisa por Bairro
+        )
+
+    # Filtro por status
+    status = request.GET.get('status')
+    if status in ['PENDENTE', 'APROVADO', 'CORRECAO']:
+        formularios = formularios.filter(status=status)
+
+    # Ordenação
+    ordem = request.GET.get('ordem')
+    if ordem == 'mais_recente':
+        formularios = formularios.order_by('-data_envio')  # Mais recente
+    elif ordem == 'menos_recente':
+        formularios = formularios.order_by('data_envio')   # Menos recente
+
+    ordem_choices = [
+        ('mais_recente', 'Recentes'),
+        ('menos_recente', 'Antigos')
+    ]
+    status_choices = PlantaCuidador.STATUS_CHOICES
+
+    # Contexto
+    context = {
+        'formularios': formularios,
+        'pesquisa': pesquisa,
+        'status_filter': status,
+        'ordem': ordem,
+        'ordem_choices': ordem_choices, 
+        'status_choices': status_choices,
+    }
+
+    return render(request, 'ipe_roxo/colaborador/formularios_enviados.html', context)
 
 
-# Detalhes de uma planta
 @login_required
 def detalhes_formulario(request, pk):
-    planta = get_object_or_404(PlantaCuidador, pk=pk, colaborador=request.user)
-    return render(request, "ipe_roxo/colaborador/detalhe_formulario.html", {"planta": planta})
+    # Verificar se o usuário é ADMIN (com base no campo 'role')
+    if request.user.tipo == 'ADMIN':  # Aqui verificamos o valor 'ADMIN' 
+        planta = get_object_or_404(PlantaCuidador, pk=pk)  # Se for admin, qualquer planta é acessível
+    else:
+        planta = get_object_or_404(PlantaCuidador, pk=pk, colaborador=request.user)  # Se não for admin, somente plantas do colaborador logado
 
+    return render(request, "ipe_roxo/colaborador/detalhe_formulario.html", {"planta": planta})
 
 ###################################################################################################
 def is_admin(user):
@@ -407,24 +464,3 @@ class FormularioCorrigirView(BaseFormularioView):
             })
         
 #########################################################
-
-# def graficos(request):
-#     # Plantios por mês (com base no campo data_envio)
-#     plantios_por_mes = (
-#         PlantaCuidador.objects
-#         .annotate(mes=TruncMonth('data_envio'))
-#         .values('mes')
-#         .annotate(total=Count('id'))
-#         .order_by('mes')
-#     )
-
-#     # Árvores ativas
-#     arvores_ativas = PlantaCuidador.objects.filter(ativo=True).count()
-#     arvores_inativas = PlantaCuidador.objects.filter(ativo=False).count()
-
-#     context = {
-#         'plantios_por_mes': list(plantios_por_mes),
-#         'arvores_ativas': arvores_ativas,
-#         'arvores_inativas': arvores_inativas,
-#     }
-#     return render(request, 'ipe_roxo/admin/home_admin.html', context)

@@ -5,26 +5,29 @@
 
 <link rel="stylesheet" href="{% static 'css/colab.css' %}">
 
-  {% include 'ipe_roxo/partials/navbar_admin.html' %}
+{% include 'ipe_roxo/partials/navbar_colaborador.html' %}
 
+<!-- CONTEÚDO PRINCIPAL -->
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card shadow">
           <div class="card-body">
-            <h2 class="card-title text-center mb-4">Cadastro de Colaborador</h2>
-
+            <h1 class="card-title text-center mb-4 fw-bold">
+              🌱 Editar Cadastro Plantio
+            </h1>
+            <hr>
             {% if messages %}
               <div class="container mt-3">
                 {% for message in messages %}
                   <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
+                    {{ message }} 
                   </div>
                 {% endfor %}
               </div>
             {% endif %}
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
               {% csrf_token %}
               {{ form.non_field_errors }}
 
@@ -41,9 +44,12 @@
                 </div>
               {% endfor %}
 
-              <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-success">Salvar</button>
-                <a href="{% url 'colaboradores' %}" class="btn btn-danger">Cancelar</a>
+          <!-- Botões -->
+              <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-outline-success px-4">✅ Salvar</button>
+                <a href="{% url 'home_colaborador' %}" class="btn btn-outline-danger px-4">
+                  ❌ Voltar
+                </a>
               </div>
             </form>
 
@@ -53,3 +59,4 @@
     </div>
   </div>
 {% endblock %}
+

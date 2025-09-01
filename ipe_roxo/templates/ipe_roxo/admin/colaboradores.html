@@ -147,20 +147,27 @@
             <form action="{% url 'alternar_status_colaborador' colaborador.id %}" method="post" style="display: inline;">
               {% csrf_token %}
               {% if colaborador.ativo %}
-                <button type="submit" class="btn btn-sm btn-success">Ativo</button>
+                  <button type="submit" class="btn btn-sm btn-success" {% if colaborador.tipo == 'ADMIN' %}disabled{% endif %}>Ativo</button>
               {% else %}
-                <button type="submit" class="btn btn-sm btn-danger">Inativo</button>
+                  <button type="submit" class="btn btn-sm btn-danger" {% if colaborador.tipo == 'ADMIN' %}disabled{% endif %}>Inativo</button>
               {% endif %}
             </form>
           </td>
           <td class="d-flex gap-2">
-            <a href="{% url 'editar_colaborador' colaborador.id %}" class="btn btn-sm btn-outline-primary">
-              <i class="bi bi-pencil-square"></i>
-            </a>
-            <!-- Botão que chama o modal -->
-            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ colaborador.id }}">
-              <i class="bi bi-trash"></i>
-            </button>
+              <!-- Verificar se não é um ADMIN -->
+            {% if colaborador.tipo != 'ADMIN' %}
+              <a href="{% url 'editar_colaborador' colaborador.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <!-- Botão que chama o modal -->
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ colaborador.id }}">
+                <i class="bi bi-trash"></i>
+              </button>
+            {% else %}
+              <button class="btn btn-sm btn-danger-secondary disabled" style="display: inline-flex; align-items: center; color: red;">
+                <i class="bi bi-lock" style="font-size: 1.0rem; color: red;"></i> 
+              </button>            
+            {% endif %}
 
             <!-- Modal de confirmação -->
             <div class="modal fade" id="confirmarExclusao{{ colaborador.id }}" tabindex="-1" aria-labelledby="modalLabel{{ colaborador.id }}" aria-hidden="true">

@@ -139,8 +139,7 @@
 
           <!-- Botões -->
           <div class="d-flex justify-content-between mt-4">
-            <a href="#" class="btn btn-outline-success px-4">
-              {% comment %} {% url 'editar_formulario' planta.pk %} {% endcomment %}
+            <a href="{% url 'editar_planta' planta.pk %}" class="btn btn-outline-success px-4">
               ✏️ Editar
             </a>
             <a href="{% url 'formularios_enviados' %}" class="btn btn-outline-danger px-4">

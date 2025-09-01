@@ -12,11 +12,11 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('colaborador/home_colaborador', views.home_colaborador, name='home_colaborador'),
     path('cadastro_plantas/', views.cadastrar_planta_cuidador, name='cadastrar_planta'),
+    path('planta/<int:pk>/editar/', views.editar_planta, name='editar_planta'),
     path('formularios/', views.formularios_enviados, name='formularios_enviados'),
 
 
     path("formularios/<int:pk>/detalhe/", views.detalhes_formulario, name="detalhe_formulario"),
-
 
     path('home_admin/formularios-recebidos/', views.formularios_recebidos, name='formularios-recebidos'),
     path('home_admin/formulario/aprovar/<int:pk>/', views.FormularioAprovarView.as_view(), name='formulario-aprovar'),

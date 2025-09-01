@@ -38,7 +38,7 @@
                 <tr id="formulario-{{ f.id }}">
                     <td>
                         {% if f.numero_registro %}
-                        <a href="#" class="text-decoration-none fw-bold link-dark">
+                        <a href="{% url 'detalhe_formulario' f.id %}"  class="text-decoration-none fw-bold link-dark">
                             {{ f.numero_registro }}
                         </a>
                         {% else %}

@@ -4,74 +4,147 @@
 {% block title %}Formulários Enviados{% endblock title %}
 
 {% block content %}
-{% include 'ipe_roxo/partials/navbar_colaborador.html' %}
+  {% include 'ipe_roxo/partials/navbar_colaborador.html' %}
 
-<div class="container my-5">
-  <h1 class="card-title text-center mb-4  fw-bold">
-    🌱 Formulários Enviados
-  </h1>
-  <hr>
-  {% if messages %}
-    <div class="mb-3">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
+  <main class="flex-grow-1 d-flex flex-column py-5 px-5">
+    <div class="container-fluid">
 
-  {% if formularios %}
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped table-hover">
-        <thead class="table-success">
-          <tr>
-            <th>Nº Registro</th>
-            <th>Espécie</th>
-            <th>Bairro</th>
-            <th>Data de Envio</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for f in formularios %}
-            <tr>
-              <td>
-                <a href="{% url 'detalhe_formulario' f.id %}"      style="color: inherit; text-decoration: none; font-weight: bold;">
-                  {{ f.numero_registro }}
-                </a>
-                
-              </td>
-              <td>{{ f.especie }}</td>
-              <td>{{ f.bairro }}</td>
-              <td>{{ f.horario_cadastro|date:"d/m/Y" }}</td>
-              <td>
-                <a href="#" class="btn btn-sm
-                  {% if f.status == 'PENDENTE' %}btn-warning
-                  {% elif f.status == 'APROVADO' %}btn-success
-                  {% elif f.status == 'CORRECAO' %}btn-danger
-                  {% else %}btn-secondary
-                  {% endif %}"
-                  {% if f.status == 'CORRECAO' and f.motivo_correcao %}
-                  data-bs-toggle="tooltip" title="{{ f.motivo_correcao }}"
-                  {% endif %}>
-                  {{ f.get_status_display }}
-                </a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <!-- Botões -->
-      <div class="d-flex justify-content-between mt-4">
-        <a href="{% url 'home_colaborador' %}" class="btn btn-outline-danger px-4">
-          ❌ Voltar
-        </a>
+      <!-- Título -->
+      <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <h1 class="card-title text-center mb-4 fw-bold">🌱 Formulários Enviados</h1>
+        </div>
       </div>
+
+      <!-- Filtros e Pesquisa -->
+      <form method="get" class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 w-100">
+
+        <!-- Campo de Pesquisa -->
+        <div class="input-group w-100 w-md-50">
+          <input type="text" name="pesquisa" class="form-control"
+                 placeholder="Pesquisar por Nº Registro, Nome, Espécie ou Bairro"
+                 value="{{ request.GET.pesquisa }}">
+          <button class="btn btn-outline-success" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+        <!-- Filtros de status e ordenação -->
+        <div class="d-flex gap-2 flex-wrap">
+
+          <!-- Filtro por Status -->
+          <div class="dropdown">
+            <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-funnel"></i> Filtrar
+            </button>
+            <ul class="dropdown-menu">
+              {% for value, label in status_choices %}
+              <li>
+                <form method="get" class="dropdown-item p-0">
+                  <input type="hidden" name="status" value="{{ value }}">
+                  {% if request.GET.pesquisa %}
+                    <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                  {% endif %}
+                  <button type="submit" class="btn w-100 text-start">{{ label }}</button>
+                </form>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Ordenar -->
+          <div class="dropdown">
+            <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-sort-alpha-down"></i> Ordenar
+            </button>
+            <ul class="dropdown-menu">
+              {% for value, label in ordem_choices %}
+              <li>
+                <form method="get" class="dropdown-item p-0">
+                  <input type="hidden" name="ordem" value="{{ value }}">
+                  {% if request.GET.pesquisa %}
+                    <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                  {% endif %}
+                  {% if request.GET.status %}
+                    <input type="hidden" name="status" value="{{ request.GET.status }}">
+                  {% endif %}
+                  <button type="submit" class="btn w-100 text-start">{{ label }}</button>
+                </form>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Limpar Filtros -->
+          <a href="{% url 'home_admin' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> Limpar Filtros
+          </a>
+        </div>
+      </form>
+
+      <!-- Mensagens -->
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Tabela de Formulários -->
+      {% if formularios %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead class="table-success">
+              <tr>
+                <th>Nº Registro</th>
+                <th>Espécie</th>
+                <th>Bairro</th>
+                <th>Data de Envio</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in formularios %}
+              <tr>
+                <td>
+                  <a href="{% url 'detalhe_formulario' f.id %}" class="text-decoration-none fw-bold link-dark">
+                    {{ f.numero_registro }}
+                  </a>
+                </td>
+                <td>{{ f.especie }}</td>
+                <td>{{ f.bairro }}</td>
+                <td>{{ f.horario_cadastro|date:"d/m/Y" }}</td>
+                <td>
+                  <a href="#"
+                     class="btn btn-sm
+                     {% if f.status == 'PENDENTE' %}btn-warning
+                     {% elif f.status == 'APROVADO' %}btn-success
+                     {% elif f.status == 'CORRECAO' %}btn-danger
+                     {% else %}btn-secondary{% endif %}"
+                     {% if f.status == 'CORRECAO' and f.motivo_correcao %}
+                       data-bs-toggle="tooltip" title="{{ f.motivo_correcao }}"
+                     {% endif %}>
+                    {{ f.get_status_display }}
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- Botão Voltar -->
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'home_colaborador' %}" class="btn btn-outline-danger px-4">
+              ❌ Voltar
+            </a>
+          </div>
+        </div>
+      {% else %}
+        <div class="alert alert-info text-center">
+          Nenhum formulário enviado ainda.
+        </div>
+      {% endif %}
     </div>
-    
-  {% else %}
-    <div class="alert alert-info text-center">
-      Nenhum formulário enviado ainda.
-    </div>
-  {% endif %}
-</div>
+  </main>
 {% endblock %}
