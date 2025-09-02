@@ -10,7 +10,7 @@ import json
 
 from .forms import PlantaCuidadorForm
 from django.http import JsonResponse
-from .models import PlantaCuidador
+from .models import PlantaCuidador, PlantaHistorico
 
 
 from django.views.generic import View
@@ -18,6 +18,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
+import calendar
+
 
 from django.db.models import Q
 from django.views.decorators.http import require_POST
@@ -82,11 +84,48 @@ def login_colaborador(request):
 
     return render(request, 'ipe_roxo/colaborador/login_colaborador.html')
 
-
-
+@login_required
 def home_colaborador(request):
+    # Filtrar plantas do usuário logado
+    plantas = PlantaCuidador.objects.filter(colaborador=request.user)
 
-    return render(request, 'ipe_roxo/colaborador/home_colaborador.html')
+    # Gráfico de Pizza
+    grafico_pizza = {
+        "vivas": plantas.filter(status_planta="VIVA").count(),
+        "mortas": plantas.filter(status_planta="MORTA").count(),
+        "replantadas": plantas.filter(status_planta="REPLANTADA").count(),
+    }
+
+    # Gráfico de Linha - Plantios por mês
+    mensal = (
+        plantas.annotate(mes=TruncMonth("data"))
+        .values("mes")
+        .annotate(total=Count("id"))
+        .order_by("mes")
+    )
+
+
+    meses = []
+    totais = []
+    for item in mensal:
+        nome_mes = calendar.month_name[item["mes"].month]
+        meses.append(f"{nome_mes}/{item['mes'].year}")
+        totais.append(item["total"])
+
+    grafico_linha = {
+        "meses": json.dumps(meses),   # Para uso direto em JS
+        "totais": json.dumps(totais),
+    }
+
+    return render(
+        request,
+        "ipe_roxo/colaborador/home_colaborador.html",
+        {
+            "grafico_pizza": grafico_pizza,
+            "grafico_linha": grafico_linha,
+        }
+    )
+
 
 def home_admin(request):
     if not request.user.is_authenticated or request.user.tipo != 'ADMIN':
@@ -96,55 +135,53 @@ def home_admin(request):
     formularios_aprovados = PlantaCuidador.objects.filter(status='APROVADO')
     
     # Calcular totais
-    total_arvores = formularios_aprovados.count()
-    total_arvores_ativas = formularios_aprovados.filter(ativo=True).count()
+    total_arvores = PlantaCuidador.objects.all().count()
+    total_vivas = PlantaCuidador.objects.filter(status_planta='VIVA').count()
+    total_mortas = PlantaCuidador.objects.filter(status_planta='MORTA').count()
+    total_replantadas = PlantaCuidador.objects.filter(status_planta='REPLANTADA').count()
 
-    # Calcular taxa de sobrevivência
-    taxa_sobrevivencia = 0
-    if total_arvores > 0:
-        taxa_sobrevivencia = (total_arvores_ativas / total_arvores) * 100
+    # Taxa de sobrevivência (vivas / total)
+    taxa_sobrevivencia = (total_vivas / total_arvores * 100) if total_arvores > 0 else 0
     
-    # Dados para gráfico mensal
+    # Dados para gráfico mensal (manter lógica atual)
     dados_mensais = obter_dados_mensais_plantios()
-    dados_mensais_json = json.dumps(dados_mensais, default=str)  # transforma datas em string ISO
-
+    dados_mensais_json = json.dumps(dados_mensais, default=str)
 
     # Pesquisar
     pesquisa = request.GET.get('pesquisa')
     if pesquisa:
         formularios_aprovados = formularios_aprovados.filter(
-            Q(numero_registro__icontains=pesquisa) |   # Pesquisa por Nº Registro
-            Q(nome__icontains=pesquisa) |               # Pesquisa por Nome
-            Q(especie__icontains=pesquisa) |            # Pesquisa por Espécie
-            Q(bairro__icontains=pesquisa)               # Pesquisa por Bairro
+            Q(numero_registro__icontains=pesquisa) |
+            Q(nome__icontains=pesquisa) |
+            Q(especie__icontains=pesquisa) |
+            Q(bairro__icontains=pesquisa)
         )
 
-
-    # Filtro por Status
-    status = request.GET.get('status')
-    if status == 'ativos':
-        formularios_aprovados = formularios_aprovados.filter(ativo=True)
-    elif status == 'inativos':
-        formularios_aprovados = formularios_aprovados.filter(ativo=False)
+    # Filtro por situação
+    status_planta= request.GET.get('status_planta')
+    if status_planta in ['VIVA', 'MORTA', 'REPLANTADA']:
+        formularios_aprovados = formularios_aprovados.filter(status_planta=status_planta)
 
     # Ordenação
     ordem = request.GET.get('ordem')
     if ordem == 'mais_recente':
-        formularios_aprovados = formularios_aprovados.order_by('-data_envio') 
+        formularios_aprovados = formularios_aprovados.order_by('-data_envio')
     elif ordem == 'menos_recente':
-        formularios_aprovados = formularios_aprovados.order_by('data_envio')   
+        formularios_aprovados = formularios_aprovados.order_by('data_envio')
+
 
     # Contexto
     context = {
         'formularios': formularios_aprovados,
         'total_arvores': total_arvores,
-        'total_arvores_ativas': total_arvores_ativas,
+        'total_vivas': total_vivas,
+        'total_mortas': total_mortas,
+        'total_replantadas': total_replantadas,
         'taxa_sobrevivencia': taxa_sobrevivencia,
-        'dados_mensais': dados_mensais,
-        'pesquisa': pesquisa,
-        'status_filter': status,
-        'ordem': ordem,
         'dados_mensais': dados_mensais_json,
+        'pesquisa': pesquisa,
+        'status_filter': status_planta,
+        'ordem': ordem,
     }
 
     return render(request, 'ipe_roxo/admin/home_admin.html', context)
@@ -309,25 +346,41 @@ def editar_planta(request, pk):
     if request.method == 'POST':
         form = PlantaCuidadorForm(request.POST, request.FILES, instance=planta)
         if form.is_valid():
-            planta = form.save(commit=False)   # ainda não salva no banco
-            planta.status = "PENDENTE"         # força o status para pendente
-            planta.save()                      # agora sim salva
+            planta = form.save(commit=False)
+            
+            # Mantém status do formulário como PENDENTE
+            planta.status = "PENDENTE"
+            
+            # Atualiza status_planta apenas se enviado
+            nova_condicao = request.POST.get('status_planta')
+            if nova_condicao in ['VIVA', 'MORTA', 'REPLANTADA']:
+                planta.status_planta = nova_condicao
+
+            planta.save()
+
+            PlantaHistorico.objects.create(
+                planta=planta,
+                foto=request.FILES.get('foto'),   # se enviou nova foto
+                descricao=f"Formulário editado. Condição da planta: {planta.status_planta}"
+            )
+
             messages.success(request, 'Planta atualizada com sucesso e enviada para nova avaliação!')
             return redirect('formularios_enviados')
     else:
         form = PlantaCuidadorForm(instance=planta)
 
-    return render(request, 'ipe_roxo/colaborador/editar_form.html', {'form': form})
+    return render(request, 'ipe_roxo/colaborador/editar_form.html', {'form': form, 'planta': planta})
+
 
 
 @login_required
 def formularios_enviados(request):
     formularios = PlantaCuidador.objects.filter(colaborador=request.user).order_by('-data_envio')
 
-      # Pesquisar
+    # Pesquisar
     pesquisa = request.GET.get('pesquisa')
     if pesquisa:
-        formularios= formularios.filter(
+        formularios = formularios.filter(
             Q(numero_registro__icontains=pesquisa) |   # Pesquisa por Nº Registro
             Q(nome__icontains=pesquisa) |               # Pesquisa por Nome
             Q(especie__icontains=pesquisa) |            # Pesquisa por Espécie
@@ -338,6 +391,11 @@ def formularios_enviados(request):
     status = request.GET.get('status')
     if status in ['PENDENTE', 'APROVADO', 'CORRECAO']:
         formularios = formularios.filter(status=status)
+
+    # Filtro por status_planta (VIVA, MORTA, REPLANTADA)
+    status_planta = request.GET.get('status_planta')
+    if status_planta in ['VIVA', 'MORTA', 'REPLANTADA']:
+        formularios = formularios.filter(status_planta=status_planta)
 
     # Ordenação
     ordem = request.GET.get('ordem')
@@ -357,6 +415,7 @@ def formularios_enviados(request):
         'formularios': formularios,
         'pesquisa': pesquisa,
         'status_filter': status,
+        'status_planta_filter': status_planta,  # Adicionando o filtro de status_planta
         'ordem': ordem,
         'ordem_choices': ordem_choices, 
         'status_choices': status_choices,
@@ -367,13 +426,17 @@ def formularios_enviados(request):
 
 @login_required
 def detalhes_formulario(request, pk):
-    # Verificar se o usuário é ADMIN (com base no campo 'role')
-    if request.user.tipo == 'ADMIN':  # Aqui verificamos o valor 'ADMIN' 
-        planta = get_object_or_404(PlantaCuidador, pk=pk)  # Se for admin, qualquer planta é acessível
+    if request.user.tipo == 'ADMIN':
+        # Admin pode ver qualquer planta
+        planta = get_object_or_404(PlantaCuidador, pk=pk)
     else:
-        planta = get_object_or_404(PlantaCuidador, pk=pk, colaborador=request.user)  # Se não for admin, somente plantas do colaborador logado
+        # Colaborador só pode ver suas próprias plantas
+        planta = get_object_or_404(PlantaCuidador, pk=pk, colaborador=request.user)
 
-    return render(request, "ipe_roxo/colaborador/detalhe_formulario.html", {"planta": planta})
+    # Em ambos os casos, traz o histórico da planta
+    historicos = planta.historicos.all().order_by("-data_evento")
+
+    return render(request,"ipe_roxo/colaborador/detalhe_formulario.html",{"planta": planta, "historicos": historicos})
 
 ###################################################################################################
 def is_admin(user):

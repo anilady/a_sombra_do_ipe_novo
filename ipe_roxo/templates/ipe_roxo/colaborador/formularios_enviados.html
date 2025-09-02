@@ -49,6 +49,45 @@
                 </form>
               </li>
               {% endfor %}
+                <!-- Vivas -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="VIVA">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Vivas</button>
+                  </form>
+                </li>
+                <!-- Mortas -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="MORTA">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Mortas</button>
+                  </form>
+                </li>
+                <!-- Replantadas -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="REPLANTADA">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Replantadas</button>
+                  </form>
+                </li>
             </ul>
           </div>
 
@@ -102,6 +141,7 @@
                 <th>Bairro</th>
                 <th>Data de Envio</th>
                 <th>Status</th>
+                <th>Situação</th>
               </tr>
             </thead>
             <tbody>
@@ -127,6 +167,19 @@
                      {% endif %}>
                     {{ f.get_status_display }}
                   </a>
+                </td>
+                  <td>
+                    <span class="badge 
+                      {% if f.status_planta == 'VIVA' %}bg-success
+                      {% elif f.status_planta == 'MORTA' %}bg-danger
+                      {% elif f.status_planta == 'REPLANTADA' %}bg-warning text-dark
+                      {% else %}bg-secondary
+                      {% endif %}">
+                      {% if f.status_planta == 'VIVA' %}Viva
+                      {% elif f.status_planta == 'MORTA' %}Morta
+                      {% elif f.status_planta == 'REPLANTADA' %}Replantada
+                      {% else %}-{% endif %}
+                    </span>
                 </td>
               </tr>
               {% endfor %}

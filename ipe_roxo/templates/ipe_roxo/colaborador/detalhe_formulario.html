@@ -85,26 +85,20 @@
 
             <div class="col-md-6">
                 <label class="form-label fw-bold">🌱 Status da Planta:</label>
-
-                {% if user.tipo == 'COLAB' and planta.colaborador == user %}  
-                    <!-- Apenas o colaborador dono da planta pode alternar -->
-                    <form action="#" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        {% if planta.ativo %}
-                            <button type="submit" class="btn btn-sm btn-success">Ativo</button>
-                        {% else %}
-                            <button type="submit" class="btn btn-sm btn-danger">Inativo</button>
-                        {% endif %}
-                    </form>
-                {% else %}
-                    <!-- Admin ou outros usuários só veem o status -->
-                    {% if planta.ativo %}
-                        <span class="badge bg-success">Ativo</span>
-                    {% else %}
-                        <span class="badge bg-danger">Inativo</span>
-                    {% endif %}
-                {% endif %}
+                <span class="btn btn-sm 
+                    {% if planta.status_planta == 'VIVA' %}btn-success
+                    {% elif planta.status_planta == 'MORTA' %}btn-danger
+                    {% elif planta.status_planta == 'REPLANTADA' %}btn-warning text-dark
+                    {% else %}btn-secondary
+                    {% endif %}">
+                    {% if planta.status_planta == 'VIVA' %}Viva
+                    {% elif planta.status_planta == 'MORTA' %}Morta
+                    {% elif planta.status_planta == 'REPLANTADA' %}Replantada
+                    {% else %}-{% endif %}
+                </span>
             </div>
+
+
             <div class="col-md-6">
               <label class="form-label fw-bold">📌 Status:</label><br>
               <button class="btn btn-sm 
@@ -136,14 +130,56 @@
               {% endif %}
             </div>
           </div>
+          <hr class="my-5">
+
+          <!-- Histórico da Planta -->
+          <h3 class="text-center text-success fw-bold mb-4">📜 Histórico da Planta</h3>
+
+          {% if historicos %}
+            <div class="row">
+              {% for h in historicos %}
+                <div class="col-md-4 mb-3">
+                  <div class="card shadow-sm border-0 rounded-3 h-100">
+                    {% if h.foto %}
+                      <img src="{{ h.foto.url }}" class="card-img-top rounded-top" alt="Foto histórica da planta" style="max-height:200px; object-fit:cover;">
+                    {% endif %}
+                    <div class="card-body">
+                      <p class="card-text">
+                        {{ h.descricao|default:"Atualização registrada" }}
+                      </p>
+                      <span class="badge 
+                        {% if formulario.status_planta == 'VIVA' %}bg-success
+                        {% elif formulario.status_planta == 'MORTA' %}bg-danger
+                        {% elif formulario.status_planta == 'REPLANTADA' %}bg-warning text-dark
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {% if formulario.status_planta == 'VIVA' %}Viva
+                        {% elif formulario.status_planta == 'MORTA' %}Morta
+                        {% elif formulario.status_planta == 'REPLANTADA' %}Replantada
+                        {% else %}-{% endif %}
+                      </span>
+                    </div>
+                    <div class="card-footer text-muted small">
+                      📅 {{ h.data_evento|date:"d/m/Y H:i" }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-center text-muted">Nenhum histórico registrado ainda.</p>
+          {% endif %}
+                    
+
+          
+
 
           <!-- Botões -->
           <div class="d-flex justify-content-between mt-4">
-            <a href="{% url 'editar_planta' planta.pk %}" class="btn btn-outline-success px-4">
-              ✏️ Editar
-            </a>
-            <a href="{% url 'formularios_enviados' %}" class="btn btn-outline-danger px-4">
-              
+            {% if user.tipo != 'ADMIN' %}
+              <a href="{% url 'editar_planta' planta.pk %}" class="btn btn-outline-success">Editar</a>
+            {% endif %}
+              <a href="{% if user.tipo == 'ADMIN' %}{% url 'formularios-recebidos' %}{% else %}{% url 'formularios_enviados' %}{% endif %}" class="btn btn-outline-danger">
               ❌ Voltar
             </a>
           </div>

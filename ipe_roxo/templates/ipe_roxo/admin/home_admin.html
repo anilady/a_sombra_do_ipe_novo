@@ -3,266 +3,307 @@
 
 {% block title %}Painel Administrativo{% endblock title %}
 
-
 {% block content %}
 {% include 'ipe_roxo/partials/navbar_admin.html' %}
-    <main class="flex-grow-1 d-flex flex-column py-5 px-5">
-      <div class="container-fluid">
 
-            <!-- Barra de Pesquisa e Filtros -->
-            <div class="row mb-4">
-                <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+<main class="flex-grow-1 d-flex flex-column py-5 px-5">
+  <div class="container-fluid">
 
-                    <!-- Título Alinhado à Esquerda -->
-                    <h1 class="fw-bold ">Painel Administrativo, {{ request.user.first_name|default:request.user.username }}</h1> 
+    <!-- Barra de Pesquisa e Filtros -->
+    <div class="row mb-4">
+      <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-                    <!-- ÁREA DE FILTRO / ORDEM -->
-                  <form method="get" class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 w-100">
+        <!-- Título -->
+        <h1 class="fw-bold">Painel Administrativo, {{ request.user.first_name|default:request.user.username }}</h1>
 
-                    <!-- CAMPO DE PESQUISA -->
-                    <div class="input-group w-100 w-md-50">
-                      <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar por Nº Registro, Nome, Espécie ou Bairro" value="{{ request.GET.pesquisa }}">
-                      <button class="btn btn-outline-success" type="submit">
-                        <i class="bi bi-search"></i>
-                      </button>
-                    </div>
+        <!-- Form de Pesquisa e Filtros -->
+        <form method="get" class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 w-100">
 
-                    <!-- FILTROS: ESPÉCIE E BAIRRO -->
-                    <div class="d-flex gap-2 flex-wrap">
+          <!-- Campo Pesquisa -->
+          <div class="input-group w-100 w-md-50">
+            <input type="text" name="pesquisa" class="form-control" placeholder="Pesquisar por Nº Registro, Nome, Espécie ou Bairro" value="{{ request.GET.pesquisa }}">
+            <button class="btn btn-outline-success" type="submit">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
 
+          <!-- Filtros -->
+          <div class="d-flex gap-2 flex-wrap">
 
-                      
-
-                      <!-- FILTRO POR STATUS -->
-                      <div class="dropdown">
-                        <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-funnel"></i> Filtrar
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li>
-                            <form method="get" class="dropdown-item p-0">
-                              <input type="hidden" name="status" value="">
-                              {% if request.GET.pesquisa %}
-                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
-                              {% endif %}
-                              {% if request.GET.especie %}
-                                <input type="hidden" name="especie" value="{{ request.GET.especie }}">
-                              {% endif %}
-                              <button type="submit" class="btn w-100 text-start">Todos</button>
-                            </form>
-                          </li>
-                          <li>
-                            <form method="get" class="dropdown-item p-0">
-                              <input type="hidden" name="status" value="ativos">
-                              {% if request.GET.pesquisa %}
-                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
-                              {% endif %}
-                              {% if request.GET.especie %}
-                                <input type="hidden" name="especie" value="{{ request.GET.especie }}">
-                              {% endif %}
-                              <button type="submit" class="btn w-100 text-start">Ativos</button>
-                            </form>
-                          </li>
-                          <li>
-                            <form method="get" class="dropdown-item p-0">
-                              <input type="hidden" name="status" value="inativos">
-                              {% if request.GET.pesquisa %}
-                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
-                              {% endif %}
-                              {% if request.GET.especie %}
-                                <input type="hidden" name="especie" value="{{ request.GET.especie }}">
-                              {% endif %}
-                              <button type="submit" class="btn w-100 text-start">Inativos</button>
-                            </form>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <!-- ORDENAR -->
-                      <div class="dropdown">
-                        <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-sort-alpha-down"></i> Ordenar
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li>
-                            <form method="get" class="dropdown-item p-0">
-                              <input type="hidden" name="ordem" value="mais_recente">
-                              {% if request.GET.pesquisa %}
-                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
-                              {% endif %}
-                              {% if request.GET.status %}
-                                <input type="hidden" name="status" value="{{ request.GET.status }}">
-                              {% endif %}
-                              <button type="submit" class="btn w-100 text-start">Recentes</button>
-                            </form>
-                          </li>
-                          <li>
-                            <form method="get" class="dropdown-item p-0">
-                              <input type="hidden" name="ordem" value="menos_recente">
-                              {% if request.GET.pesquisa %}
-                                <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
-                              {% endif %}
-                              {% if request.GET.status %}
-                                <input type="hidden" name="status" value="{{ request.GET.status }}">
-                              {% endif %}
-                              <button type="submit" class="btn w-100 text-start">Antigos</button>
-                            </form>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <!-- BOTÃO LIMPAR FILTROS -->
-                      <a href="{% url 'home_admin' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Limpar Filtros
-                      </a>
-
-                    </div>
+            <!-- Filtro por Situação -->
+            <div class="dropdown">
+              <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-funnel"></i> Filtrar
+              </button>
+              <ul class="dropdown-menu">
+                <!-- Todos -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Todos</button>
                   </form>
-
-            <!-- Tabela de Formulários -->
-            <div class="col-12 mb-5">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover">
-                        <thead class="table-success">
-                            <tr>
-                                <th>Nº Registro</th>
-                                <th>Nome</th>
-                                <th>Espécie</th>
-                                <th>Data Plantio</th>
-                                <th>Data Envio</th>
-                                <th>Bairro</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for formulario in formularios %}
-                                <tr>
-                                    <td>{{ formulario.numero_registro }}</td>
-                                    <td>{{ formulario.nome }}</td>
-                                    <td>{{ formulario.especie }}</td>
-                                    <td>{{ formulario.data|date:"d/m/Y" }}</td>
-                                    <td>{{ formulario.data_envio|date:"d/m/Y H:i" }}</td>
-                                    <td>{{ formulario.bairro }}</td>
-                                    <td>
-                                        <span class="badge {% if formulario.ativo %}bg-success{% else %}bg-danger{% endif %}">
-                                            {% if formulario.ativo %}Ativa{% else %}Inativa{% endif %}
-                                        </span>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="8">Nenhum formulário aprovado encontrado.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                </li>
+                <!-- Vivas -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="VIVA">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Vivas</button>
+                  </form>
+                </li>
+                <!-- Mortas -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="MORTA">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Mortas</button>
+                  </form>
+                </li>
+                <!-- Replantadas -->
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="status_planta" value="REPLANTADA">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.especie %}
+                      <input type="hidden" name="especie" value="{{ request.GET.especie }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Replantadas</button>
+                  </form>
+                </li>
+              </ul>
             </div>
 
-            <!-- Estatísticas -->
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title  fw-bold">Total de Árvores Plantadas</h5>
-                            <p class="stat-number display-4 text-success">{{ total_arvores }}</p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Ordenação -->
+            <div class="dropdown">
+              <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-sort-alpha-down"></i> Ordenar
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="ordem" value="mais_recente">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.status_planta %}
+                      <input type="hidden" name="status_planta" value="{{ request.GET.status_planta }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Recentes</button>
+                  </form>
+                </li>
+                <li>
+                  <form method="get" class="dropdown-item p-0">
+                    <input type="hidden" name="ordem" value="menos_recente">
+                    {% if request.GET.pesquisa %}
+                      <input type="hidden" name="pesquisa" value="{{ request.GET.pesquisa }}">
+                    {% endif %}
+                    {% if request.GET.status_planta %}
+                      <input type="hidden" name="status_planta" value="{{ request.GET.status_planta }}">
+                    {% endif %}
+                    <button type="submit" class="btn w-100 text-start">Antigos</button>
+                  </form>
+                </li>
+              </ul>
+            </div>
 
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold ">Árvores Ativas</h5>
-                            <p class="stat-number display-4 text-primary">{{ total_arvores_ativas }}</p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Limpar filtros -->
+            <a href="{% url 'home_admin' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle"></i> Limpar Filtros
+            </a>
 
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">Taxa de Sobrevivência</h5>
-                            <p class="stat-number display-4 text-info">
-                                {% if total_arvores > 0 %}
-                                    {{ taxa_sobrevivencia|floatformat:1 }}%
-                                {% else %}
-                                    0%
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                            <!-- Gráfico de Plantios -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h3 class="fw-bold mb-0 ">📊 Plantios por Mês</h3>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="plantiosChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-              </div>
+          </div>
         </div>
+      </form>
+    </div>
 
+    <!-- Tabela de Formulários -->
+    <div class="col-12 mb-5">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead class="table-success">
+            <tr>
+              <th>Nº Registro</th>
+              <th>Nome</th>
+              <th>Espécie</th>
+              <th>Data Plantio</th>
+              <th>Data Envio</th>
+              <th>Bairro</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for formulario in formularios %}
+            <tr>
+              <td >
+                <a href="{% url 'detalhe_formulario' formulario.id %}" class="text-decoration-none fw-bold link-dark">
+                    {{ formulario.numero_registro }}
+                </a>
+              </td>
+              <td>{{ formulario.colaborador }}</td>
+              <td>{{ formulario.especie }}</td>
+              <td>{{ formulario.data|date:"d/m/Y" }}</td>
+              <td>{{ formulario.data_envio|date:"d/m/Y H:i" }}</td>
+              <td>{{ formulario.bairro }}</td>
+              <td>
+                <span class="badge 
+                  {% if formulario.status_planta == 'VIVA' %}bg-success
+                  {% elif formulario.status_planta == 'MORTA' %}bg-danger
+                  {% elif formulario.status_planta == 'REPLANTADA' %}bg-warning text-dark
+                  {% else %}bg-secondary
+                  {% endif %}">
+                  {% if formulario.status_planta == 'VIVA' %}Viva
+                  {% elif formulario.status_planta == 'MORTA' %}Morta
+                  {% elif formulario.status_planta == 'REPLANTADA' %}Replantada
+                  {% else %}-{% endif %}
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7">Nenhum formulário aprovado encontrado.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-    </main>
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">Total de Árvores Plantadas</h5>
+            <p class="stat-number display-4 text-success">{{ total_arvores }}</p>
+          </div>
+        </div>
+      </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">Árvores Vivas</h5>
+            <p class="stat-number display-4 text-primary">{{ total_vivas }}</p>
+          </div>
+        </div>
+      </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dadosMensais = JSON.parse('{{ dados_mensais|escapejs }}');
-            console.log('Dados mensais:', dadosMensais);
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">Árvores Mortas</h5>
+            <p class="stat-number display-4 text-danger">{{ total_mortas }}</p>
+          </div>
+        </div>
+      </div>
 
-            if (dadosMensais && dadosMensais.length > 0) {
-                const meses = dadosMensais.map(item => {
-                    if (item.mes) {
-                        const date = new Date(item.mes);
-                        return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-                    }
-                    return 'Data inválida';
-                });
+      <div class="col-md-4 mt-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">Árvores Replantadas</h5>
+            <p class="stat-number display-4 text-warning">{{ total_replantadas }}</p>
+          </div>
+        </div>
+      </div>
 
-                const quantidades = dadosMensais.map(item => item.quantidade || 0);
+      <div class="col-md-4 mt-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title">Taxa de Sobrevivência</h5>
+            <p class="stat-number display-4 text-info">
+              {% if total_arvores > 0 %}
+                {{ taxa_sobrevivencia|floatformat:1 }}%
+              {% else %}
+                0%
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
 
-                const ctx = document.getElementById('plantiosChart').getContext('2d');
+      <!-- Gráfico de Plantios -->
+      <div class="card mb-4 mt-4">
+        <div class="card-header">
+          <h3 class="fw-bold mb-0">📊 Plantios por Mês</h3>
+        </div>
+        <div class="card-body">
+          <canvas id="plantiosChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
 
-                if (window.plantiosChartInstance) {
-                    window.plantiosChartInstance.destroy();
-                }
+  </div>
+</main>
 
-                window.plantiosChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: meses,
-                        datasets: [{
-                            label: 'Plantios por Mês',
-                            data: quantidades,
-                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dadosMensais = JSON.parse('{{ dados_mensais|escapejs }}');
+
+    if (dadosMensais && dadosMensais.length > 0) {
+        const meses = dadosMensais.map(item => {
+            if (item.mes) {
+                const date = new Date(item.mes);
+                return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            }
+            return 'Data inválida';
+        });
+        const quantidades = dadosMensais.map(item => item.quantidade || 0);
+
+        const ctx = document.getElementById('plantiosChart').getContext('2d');
+        if (window.plantiosChartInstance) {
+            window.plantiosChartInstance.destroy();
+        }
+
+        window.plantiosChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: 'Plantios por Mês',
+                    data: quantidades,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Quantidade de Plantios'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Quantidade de Plantios'
-                                },
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            },
-                            x: {
-                              title: {
-                              display: true,
-                              text: 'Mês'
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mês'
                         }
                     }
                 }
@@ -292,11 +333,8 @@
     font-weight: 600;
 }
 
-
 #plantiosChart {
     max-height: 400px;
 }
-
-
 </style>
 {% endblock %}

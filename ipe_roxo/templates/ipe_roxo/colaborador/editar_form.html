@@ -44,10 +44,31 @@
                 </div>
               {% endfor %}
 
+              <div class="mb-3">
+                <label class="form-label fw-bold">🌱 Condição da Planta:</label><br>
+                
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="status_planta" id="viva" value="VIVA" 
+                        {% if planta.status_planta == 'VIVA' %}checked{% endif %}>
+                  <label class="form-check-label" for="viva">Viva</label>
+                </div>
+                
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="status_planta" id="morta" value="MORTA" 
+                        {% if planta.status_planta == 'MORTA' %}checked{% endif %}>
+                  <label class="form-check-label" for="morta">Morta</label>
+                </div>
+                
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="status_planta" id="replantada" value="REPLANTADA" 
+                        {% if planta.status_planta == 'REPLANTADA' %}checked{% endif %}>
+                  <label class="form-check-label" for="replantada">Replantada</label>
+                </div>
+              </div>
           <!-- Botões -->
               <div class="d-flex justify-content-between mt-4">
                 <button type="submit" class="btn btn-outline-success px-4">✅ Salvar</button>
-                <a href="{% url 'home_colaborador' %}" class="btn btn-outline-danger px-4">
+                <a href="{% url 'formularios_enviados' %}" class="btn btn-outline-danger px-4">
                   ❌ Voltar
                 </a>
               </div>
